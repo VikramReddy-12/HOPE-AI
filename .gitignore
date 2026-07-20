@@ -1,0 +1,19 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Virtual Environment
+.venv/
+
+# VS Code
+.vscode/
+
+# Cursor
+.cursor/
+
+# Environment variables
+.env
+
+# Operating System
+.DS_Store
+Thumbs.db
