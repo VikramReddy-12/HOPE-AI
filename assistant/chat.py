@@ -1,5 +1,6 @@
-from assistant.commands import process_command
+from assistant.router import route
 from ai.brain import think
+
 
 def chat():
 
@@ -19,6 +20,6 @@ def chat():
             print("HOPE: Shutting down...")
             break
 
-        response = process_command(command)
+        response = route(command, intent)
 
         print(f"HOPE: {response}")

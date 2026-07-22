@@ -14,6 +14,12 @@ def detect_intent(command):
     elif "help" in command:
         return "HELP"
 
+    elif command.startswith("remember "):
+        return "MEMORY_SAVE"
+
+    elif command.startswith("recall "):
+        return "MEMORY_RECALL"
+
     elif command == "exit":
         return "EXIT"
 
