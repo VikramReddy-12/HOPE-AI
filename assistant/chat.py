@@ -13,13 +13,15 @@ def chat():
 
         user = input("You: ")
 
-        command, intent = think(user)
+        result = think(user)
+
+        intent = result["intent"]
 
         if intent == "EXIT":
             print("HOPE: Goodbye Vikram!")
             print("HOPE: Shutting down...")
             break
 
-        response = route(command, intent)
+        response = route(result)
 
         print(f"HOPE: {response}")

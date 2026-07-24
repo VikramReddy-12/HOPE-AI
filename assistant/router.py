@@ -2,42 +2,54 @@ from assistant.commands import process_command
 from memory.manager import remember, recall
 
 
-def route(command, intent):
+def route(result):
 
-    # Debug message
+    intent = result["intent"]
+
     print(f"[Router] Intent : {intent}")
-    print(f"[Router] Command: {command}")
 
     if intent == "GREETING":
-        return process_command(command)
+        return process_command(result["command"])
 
     elif intent == "TIME_REQUEST":
-        return process_command(command)
+        return process_command(result["command"])
 
     elif intent == "DATE_REQUEST":
-        return process_command(command)
+        return process_command(result["command"])
 
     elif intent == "HELP":
-        return process_command(command)
+        return process_command(result["command"])
 
     elif intent == "MEMORY_SAVE":
 
-        parts = command.split(" ", 2)
+        # Case 1: NLU already extracted key and value
+        if "key" in result and "value" in result:
 
-        if len(parts) == 3:
+            key = result["key"]
+            value = result["value"]
+
+        # Case 2: Old "remember key value" command
+        else:
+
+            command = result["command"]
+
+            parts = command.split(" ", 2)
+
+            if len(parts) != 3:
+                return "Usage: remember <key> <value>"
 
             key = parts[1]
             value = parts[2]
 
-            print(f"[Router] Saving Memory")
-            print(f"[Router] Key   : {key}")
-            print(f"[Router] Value : {value}")
+        print(f"[Router] Saving Memory")
+        print(f"[Router] Key   : {key}")
+        print(f"[Router] Value : {value}")
 
-            return remember(key, value)
-
-        return "Usage: remember <key> <value>"
+        return remember(key, value)
 
     elif intent == "MEMORY_RECALL":
+
+        command = result["command"]
 
         parts = command.split(" ", 1)
 
@@ -57,6 +69,8 @@ def route(command, intent):
 
         return "Usage: recall <key>"
 
-    else:
+    elif intent == "EXIT":
+        return "Goodbye!"
 
-        return process_command(command)
+    else:
+        return process_command(result.get("command", ""))
