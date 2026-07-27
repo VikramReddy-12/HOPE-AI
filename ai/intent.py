@@ -2,6 +2,9 @@ def detect_intent(command):
 
     command = command.lower().strip()
 
+    # Remove punctuation that users commonly type
+    command = command.replace("?", "").replace(".", "").replace("!", "")
+
     if command in ["hello", "hi", "hey"]:
         return "GREETING"
 
@@ -13,6 +16,13 @@ def detect_intent(command):
 
     elif "help" in command:
         return "HELP"
+
+    elif command in [
+        "what did i just say",
+        "what was my last message",
+        "repeat my last message"
+    ]:
+        return "LAST_USER_MESSAGE"
 
     elif command.startswith("remember "):
         return "MEMORY_SAVE"

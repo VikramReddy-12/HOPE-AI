@@ -1,5 +1,6 @@
 from assistant.commands import process_command
 from memory.manager import remember, recall
+from conversation.manager import get_last_user_message
 
 
 def route(result):
@@ -28,7 +29,7 @@ def route(result):
             key = result["key"]
             value = result["value"]
 
-        # Case 2: Old "remember key value" command
+        # Case 2: Old remember command
         else:
 
             command = result["command"]
@@ -46,6 +47,16 @@ def route(result):
         print(f"[Router] Value : {value}")
 
         return remember(key, value)
+
+    elif intent == "LAST_USER_MESSAGE":
+
+        # Skip the current question and return the previous user message
+        last_message = get_last_user_message(skip_current=True)
+
+        if last_message:
+            return f'You said: "{last_message}"'
+
+        return "I don't remember you saying anything yet."
 
     elif intent == "MEMORY_RECALL":
 
