@@ -1,6 +1,7 @@
 from assistant.commands import process_command
 from memory.manager import remember, recall
 from conversation.manager import get_last_user_message
+from conversation.summary import summarize_conversation
 
 
 def route(result):
@@ -57,6 +58,10 @@ def route(result):
             return f'You said: "{last_message}"'
 
         return "I don't remember you saying anything yet."
+
+    elif intent == "CONVERSATION_SUMMARY":
+
+        return summarize_conversation()
 
     elif intent == "MEMORY_RECALL":
 

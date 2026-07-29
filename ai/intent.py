@@ -24,6 +24,14 @@ def detect_intent(command):
     ]:
         return "LAST_USER_MESSAGE"
 
+    elif command in [
+        "what did we talk about",
+        "summarize our conversation",
+        "conversation summary",
+        "summarize the conversation"
+    ]:
+        return "CONVERSATION_SUMMARY"
+
     elif command.startswith("remember "):
         return "MEMORY_SAVE"
 
