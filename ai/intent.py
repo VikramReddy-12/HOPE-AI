@@ -38,6 +38,25 @@ def detect_intent(command):
     elif command.startswith("recall "):
         return "MEMORY_RECALL"
 
+    # Knowledge Engine (v0.9)
+    elif command.startswith("what is "):
+        return "KNOWLEDGE_SEARCH"
+
+    elif command.startswith("who is "):
+        return "KNOWLEDGE_SEARCH"
+
+    elif command.startswith("who created "):
+        return "KNOWLEDGE_SEARCH"
+
+    elif command.startswith("what are "):
+        return "KNOWLEDGE_SEARCH"
+
+    elif command.startswith("tell me about "):
+        return "KNOWLEDGE_SEARCH"
+
+    elif command.startswith("explain "):
+        return "KNOWLEDGE_SEARCH"
+
     elif command == "exit":
         return "EXIT"
 

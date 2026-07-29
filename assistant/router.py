@@ -2,6 +2,7 @@ from assistant.commands import process_command
 from memory.manager import remember, recall
 from conversation.manager import get_last_user_message
 from conversation.summary import summarize_conversation
+from knowledge.engine import search_knowledge
 
 
 def route(result):
@@ -62,6 +63,12 @@ def route(result):
     elif intent == "CONVERSATION_SUMMARY":
 
         return summarize_conversation()
+
+    elif intent == "KNOWLEDGE_SEARCH":
+
+        command = result["command"]
+
+        return search_knowledge(command)
 
     elif intent == "MEMORY_RECALL":
 
