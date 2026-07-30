@@ -31,6 +31,24 @@ def get_conversation():
     return conversation
 
 
+def get_all_user_messages():
+    """
+    Return all user messages in chronological order.
+
+    Returns:
+        list[str]
+    """
+
+    user_messages = []
+
+    for message in conversation:
+
+        if message["speaker"] == "user":
+            user_messages.append(message["message"])
+
+    return user_messages
+
+
 def get_last_user_message(skip_current=False):
     """
     Return the most recent user message.
@@ -39,26 +57,18 @@ def get_last_user_message(skip_current=False):
     instead of the current one.
     """
 
-    user_messages = []
-
-    # Collect all user messages
-    for message in conversation:
-
-        if message["speaker"] == "user":
-            user_messages.append(message["message"])
+    user_messages = get_all_user_messages()
 
     if not user_messages:
         return None
 
     if skip_current:
 
-        # Return the previous user message
         if len(user_messages) >= 2:
             return user_messages[-2]
 
         return None
 
-    # Return the latest user message
     return user_messages[-1]
 
 

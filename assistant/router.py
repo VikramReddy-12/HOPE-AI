@@ -3,6 +3,7 @@ from memory.manager import remember, recall
 from conversation.manager import get_last_user_message
 from conversation.summary import summarize_conversation
 from knowledge.engine import search_knowledge
+from reasoning.engine import reason
 
 
 def route(result):
@@ -50,26 +51,6 @@ def route(result):
 
         return remember(key, value)
 
-    elif intent == "LAST_USER_MESSAGE":
-
-        # Skip the current question and return the previous user message
-        last_message = get_last_user_message(skip_current=True)
-
-        if last_message:
-            return f'You said: "{last_message}"'
-
-        return "I don't remember you saying anything yet."
-
-    elif intent == "CONVERSATION_SUMMARY":
-
-        return summarize_conversation()
-
-    elif intent == "KNOWLEDGE_SEARCH":
-
-        command = result["command"]
-
-        return search_knowledge(command)
-
     elif intent == "MEMORY_RECALL":
 
         command = result["command"]
@@ -92,8 +73,39 @@ def route(result):
 
         return "Usage: recall <key>"
 
+    elif intent == "LAST_USER_MESSAGE":
+
+        last_message = get_last_user_message(skip_current=True)
+
+        if last_message:
+            return f'You said: "{last_message}"'
+
+        return "I don't remember you saying anything yet."
+
+    elif intent == "CONVERSATION_SUMMARY":
+
+        return summarize_conversation()
+
+    elif intent == "KNOWLEDGE_SEARCH":
+
+        command = result["command"]
+
+        # First try the Reasoning Engine
+        response = reason(command)
+
+        # If reasoning succeeded, return its response
+        if response is not None:
+            return response
+
+        # Otherwise, use the Knowledge Engine
+        return search_knowledge(command)
+
     elif intent == "EXIT":
+
         return "Goodbye!"
 
     else:
-        return process_command(result.get("command", ""))
+
+        command = result.get("command", "")
+
+        return process_command(command)
