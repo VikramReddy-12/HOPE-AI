@@ -1,0 +1,135 @@
+==================================================
+HOPE AI v1.1 - Advanced Reasoning
+Manual Test Suite
+==================================================
+
+STARTUP
+--------
+1. Launch HOPE
+2. Verify professional startup banner is displayed
+3. Verify all modules are listed
+4. Verify "Status : ONLINE"
+
+--------------------------------------------------
+GENERAL
+--------------------------------------------------
+
+hello
+
+help
+
+time
+
+date
+
+--------------------------------------------------
+KNOWLEDGE ENGINE
+--------------------------------------------------
+
+What is Python?
+
+Who created Python?
+
+When was Python released?
+
+What is Python used for?
+
+Advantages of Python
+
+Disadvantages of Python
+
+Is Python beginner friendly?
+
+What is Python best for?
+
+Tell me about Python
+
+Explain Python
+
+--------------------------------------------------
+JAVA KNOWLEDGE
+--------------------------------------------------
+
+What is Java?
+
+Who created Java?
+
+When was Java released?
+
+Advantages of Java
+
+Disadvantages of Java
+
+What is Java best for?
+
+--------------------------------------------------
+COMPARISON ENGINE
+--------------------------------------------------
+
+Compare Python and Java
+
+Python vs Java
+
+Difference between Python and Java
+
+Python or Java
+
+--------------------------------------------------
+RECOMMENDATION ENGINE
+--------------------------------------------------
+
+Should I learn Python?
+
+Recommend Python
+
+Should I learn Java?
+
+Recommend Java
+
+--------------------------------------------------
+REFERENCE RESOLUTION
+--------------------------------------------------
+
+Tell me about Python
+
+Who created it?
+
+When was it released?
+
+What is it used for?
+
+--------------------------------------------------
+MEMORY
+--------------------------------------------------
+
+Remember favorite_car BMW
+
+Recall favorite_car
+
+--------------------------------------------------
+CONVERSATION
+--------------------------------------------------
+
+What did I just say?
+
+Summarize our conversation
+
+--------------------------------------------------
+EMPTY INPUT
+--------------------------------------------------
+
+Press ENTER
+
+Expected:
+Please enter a question.
+
+--------------------------------------------------
+EXIT
+--------------------------------------------------
+
+exit
+
+Expected:
+Goodbye Vikram!
+HOPE: Shutting down...
+==================================================

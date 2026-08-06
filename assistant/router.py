@@ -7,32 +7,45 @@ from reasoning.engine import reason
 
 
 def route(result):
+    """
+    Route the detected intent to the appropriate module.
+    """
 
     intent = result["intent"]
 
     print(f"[Router] Intent : {intent}")
 
+    # -----------------------------
+    # Greetings
+    # -----------------------------
     if intent == "GREETING":
         return process_command(result["command"])
 
+    # -----------------------------
+    # Time / Date
+    # -----------------------------
     elif intent == "TIME_REQUEST":
         return process_command(result["command"])
 
     elif intent == "DATE_REQUEST":
         return process_command(result["command"])
 
+    # -----------------------------
+    # Help
+    # -----------------------------
     elif intent == "HELP":
         return process_command(result["command"])
 
+    # -----------------------------
+    # Memory Save
+    # -----------------------------
     elif intent == "MEMORY_SAVE":
 
-        # Case 1: NLU already extracted key and value
         if "key" in result and "value" in result:
 
             key = result["key"]
             value = result["value"]
 
-        # Case 2: Old remember command
         else:
 
             command = result["command"]
@@ -45,12 +58,15 @@ def route(result):
             key = parts[1]
             value = parts[2]
 
-        print(f"[Router] Saving Memory")
+        print("[Router] Saving Memory")
         print(f"[Router] Key   : {key}")
         print(f"[Router] Value : {value}")
 
         return remember(key, value)
 
+    # -----------------------------
+    # Memory Recall
+    # -----------------------------
     elif intent == "MEMORY_RECALL":
 
         command = result["command"]
@@ -61,7 +77,7 @@ def route(result):
 
             key = parts[1]
 
-            print(f"[Router] Recalling Memory")
+            print("[Router] Recalling Memory")
             print(f"[Router] Key : {key}")
 
             value = recall(key)
@@ -73,6 +89,9 @@ def route(result):
 
         return "Usage: recall <key>"
 
+    # -----------------------------
+    # Conversation
+    # -----------------------------
     elif intent == "LAST_USER_MESSAGE":
 
         last_message = get_last_user_message(skip_current=True)
@@ -86,24 +105,48 @@ def route(result):
 
         return summarize_conversation()
 
+    # -----------------------------
+    # Knowledge Search
+    # -----------------------------
     elif intent == "KNOWLEDGE_SEARCH":
 
         command = result["command"]
 
-        # First try the Reasoning Engine
         response = reason(command)
 
-        # If reasoning succeeded, return its response
         if response is not None:
             return response
 
-        # Otherwise, use the Knowledge Engine
         return search_knowledge(command)
 
+    # -----------------------------
+    # Comparison
+    # -----------------------------
+    elif intent == "COMPARE":
+
+        command = result["command"]
+
+        return reason(command)
+
+    # -----------------------------
+    # Recommendation
+    # -----------------------------
+    elif intent == "RECOMMEND":
+
+        command = result["command"]
+
+        return reason(command)
+
+    # -----------------------------
+    # Exit
+    # -----------------------------
     elif intent == "EXIT":
 
         return "Goodbye!"
 
+    # -----------------------------
+    # Unknown
+    # -----------------------------
     else:
 
         command = result.get("command", "")

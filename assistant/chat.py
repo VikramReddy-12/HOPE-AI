@@ -1,18 +1,30 @@
+"""
+HOPE Chat Module
+
+Handles the main conversation loop between
+the user and HOPE.
+"""
+
 from assistant.router import route
 from ai.brain import think
 from conversation.manager import add_message
 
 
 def chat():
-
-    print()
-    print("HOPE is ready to talk.")
-    print("Type 'exit' to close HOPE.")
-    print()
+    """
+    Main chat loop.
+    """
 
     while True:
 
-        user = input("You: ")
+        user = input("You: ").strip()
+
+        # ---------------------------------
+        # Empty input
+        # ---------------------------------
+        if not user:
+            print("HOPE: Please enter a question.")
+            continue
 
         # Save the user's message
         add_message("user", user)
@@ -22,17 +34,21 @@ def chat():
 
         intent = result["intent"]
 
-        # Exit command
+        # ---------------------------------
+        # Exit
+        # ---------------------------------
         if intent == "EXIT":
             print("HOPE: Goodbye Vikram!")
             print("HOPE: Shutting down...")
             break
 
-        # Get HOPE's response
+        # ---------------------------------
+        # Route request
+        # ---------------------------------
         response = route(result)
 
         # Save HOPE's response
         add_message("hope", response)
 
-        # Display the response
+        # Display response
         print(f"HOPE: {response}")

@@ -7,16 +7,33 @@ request is sent to the Router.
 
 
 def detect_intent(command):
+    """
+    Detect the user's intent.
+
+    Parameters:
+        command (str): User input.
+
+    Returns:
+        str: Detected intent.
+    """
 
     command = command.lower().strip()
 
     # Remove common punctuation
-    command = command.replace("?", "").replace(".", "").replace("!", "")
+    command = (
+        command.replace("?", "")
+               .replace(".", "")
+               .replace("!", "")
+    )
 
     # -----------------------------
     # Greetings
     # -----------------------------
-    if command in ["hello", "hi", "hey"]:
+    if command in [
+        "hello",
+        "hi",
+        "hey"
+    ]:
         return "GREETING"
 
     # -----------------------------
@@ -62,6 +79,37 @@ def detect_intent(command):
         return "MEMORY_RECALL"
 
     # -----------------------------
+    # Comparison
+    # -----------------------------
+    elif (
+        command.startswith("compare ")
+        or command.startswith("compare between ")
+        or command.startswith("difference between ")
+        or command.startswith("difference of ")
+        or " vs " in command
+        or " versus " in command
+        or " compare " in command
+        or " or " in command
+    ):
+        return "COMPARE"
+
+    # -----------------------------
+    # Recommendation
+    # -----------------------------
+    elif (
+        command.startswith("should i ")
+        or command.startswith("recommend ")
+        or command.startswith("which is better")
+        or command.startswith("which language")
+        or command.startswith("best language")
+        or command.startswith("best programming language")
+        or command.startswith("what should i learn")
+        or command.startswith("which should i choose")
+        or command.startswith("which one is better")
+    ):
+        return "RECOMMEND"
+
+    # -----------------------------
     # Knowledge Search
     # -----------------------------
     elif (
@@ -74,9 +122,26 @@ def detect_intent(command):
         or command.startswith("explain ")
         or command.startswith("when was ")
         or command.startswith("when did ")
-        or "used for" in command
+        or command.startswith("advantages of ")
+        or command.startswith("disadvantages of ")
+        or command.startswith("pros of ")
+        or command.startswith("cons of ")
+        or command.startswith("benefits of ")
+        or command.startswith("drawbacks of ")
         or command.startswith("uses of ")
         or command.startswith("purpose of ")
+        or command.startswith("best for ")
+        or command.startswith("is ")
+        or "used for" in command
+        or "advantages" in command
+        or "disadvantages" in command
+        or "benefits" in command
+        or "pros" in command
+        or "cons" in command
+        or "best for" in command
+        or "beginner" in command
+        or "easy" in command
+        or "hard" in command
     ):
         return "KNOWLEDGE_SEARCH"
 

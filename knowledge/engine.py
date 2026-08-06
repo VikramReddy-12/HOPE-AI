@@ -1,62 +1,168 @@
 """
 HOPE Knowledge Engine
 
-This module searches the built-in knowledge
-database and returns the most relevant answer.
+Searches the structured knowledge database
+and returns answers based on the user's question.
 """
 
 from knowledge.database import knowledge
 
 
+# Maps keywords in a question to knowledge fields.
+FIELD_MAP = {
+
+    "creator": [
+        "who created",
+        "creator"
+    ],
+
+    "released": [
+        "when was",
+        "released",
+        "release"
+    ],
+
+    "uses": [
+        "used for",
+        "uses",
+        "use"
+    ],
+
+    # IMPORTANT:
+    # Keep "disadvantages" before "advantages"
+    # because "advantages" is part of the word
+    # "disadvantages".
+    "disadvantages": [
+        "disadvantages",
+        "drawbacks",
+        "cons"
+    ],
+
+    "advantages": [
+        "advantages",
+        "benefits",
+        "pros"
+    ],
+
+    "difficulty": [
+        "beginner",
+        "difficulty",
+        "easy",
+        "hard"
+    ],
+
+    "best_for": [
+        "best for",
+        "good for"
+    ],
+
+    "definition": [
+        "tell me about",
+        "what is",
+        "explain"
+    ]
+}
+
+
+def find_topics(question):
+    """
+    Find all known topics in a question.
+
+    Parameters:
+        question (str)
+
+    Returns:
+        list[str]
+    """
+
+    question = question.lower().strip()
+
+    topics = []
+
+    for topic in knowledge.keys():
+
+        if topic in question:
+
+            topics.append(topic)
+
+    return topics
+
+
 def search_knowledge(question):
     """
-    Searches the knowledge database for a matching topic.
+    Search the structured knowledge database.
+
+    Parameters:
+        question (str)
+
+    Returns:
+        str
     """
 
-    question = question.lower()
+    question = question.lower().strip()
 
-    for topic, info in knowledge.items():
+    # ---------------------------------
+    # Find all matching topics
+    # ---------------------------------
 
-        if topic not in question:
-            continue
+    topics = find_topics(question)
 
-        # Creator
-        if (
-            "who created" in question
-            or "creator" in question
-            or "inventor" in question
-            or "who invented" in question
-        ):
-            return info.get("creator", "I don't know that yet.")
+    if not topics:
+        return "I don't know that yet."
 
-        # Release Year
-        elif (
-            "when was" in question
-            or "when did" in question
-            or "released" in question
-            or "release" in question
-        ):
-            return info.get("released", "I don't know that yet.")
+    # For now, use the first topic.
+    # Later (v1.1) the Reasoning Engine
+    # will use all detected topics.
+    topic_found = topics[0]
 
-        # Uses
-        elif (
-            "used for" in question
-            or "uses" in question
-            or "use" in question
-            or "purpose" in question
-            or "application" in question
-        ):
-            return info.get("uses", "I don't know that yet.")
+    topic_data = knowledge[topic_found]
 
-        # Definition
-        elif (
-            "what is" in question
-            or "tell me about" in question
-            or "explain" in question
-        ):
-            return info.get("definition", "I don't know that yet.")
+    # ---------------------------------
+    # Determine which field is requested
+    # ---------------------------------
 
-        # Default
-        return info.get("definition", "I don't know that yet.")
+    field = "definition"
 
-    return "I don't know that yet."
+    keyword_pairs = []
+
+    for key, keywords in FIELD_MAP.items():
+
+        for keyword in keywords:
+
+            keyword_pairs.append((keyword, key))
+
+    # Longest keyword first
+    keyword_pairs.sort(
+        key=lambda item: len(item[0]),
+        reverse=True
+    )
+
+    for keyword, key in keyword_pairs:
+
+        if keyword in question:
+
+            field = key
+            break
+
+    # ---------------------------------
+    # Return the requested information
+    # ---------------------------------
+
+    if field not in topic_data:
+
+        return (
+            f"I don't have "
+            f"{field.replace('_', ' ')} "
+            f"information for {topic_found.title()}."
+        )
+
+    answer = topic_data[field]
+
+    if isinstance(answer, list):
+
+        return "\n".join(
+            f"• {item}"
+            for item in answer
+        )
+
+    return answer
