@@ -79,6 +79,81 @@ def detect_intent(command):
         return "MEMORY_RECALL"
 
     # -----------------------------
+    # Goal Detection
+    # -----------------------------
+    elif (
+        command.startswith("i want to become ")
+        or command.startswith("i want to be ")
+        or command.startswith("i want to learn ")
+        or command.startswith("my goal is ")
+        or command.startswith("i want a career in ")
+        or command.startswith("i want a job as ")
+        or command.startswith("i would like to become ")
+    ):
+        return "GOAL"
+
+    # -----------------------------
+    # Goal Recall
+    # -----------------------------
+    elif command in [
+        "what is my goal",
+        "what's my goal",
+        "show my goal",
+        "my goal",
+        "current goal"
+    ]:
+        return "GOAL_RECALL"
+
+    # -----------------------------
+    # Study Planner
+    # -----------------------------
+    elif command in [
+        "what should i study today",
+        "study plan",
+        "today's study plan",
+        "todays study plan",
+        "create a study plan",
+        "show my study plan",
+        "plan my study",
+        "what should i learn today"
+    ]:
+        return "STUDY_PLAN"
+
+    # -----------------------------
+    # Progress
+    # -----------------------------
+    elif command in [
+        "show my progress",
+        "my progress",
+        "progress",
+        "learning progress",
+        "goal progress"
+    ]:
+        return "PROGRESS"
+
+    # -----------------------------
+    # Next Topic
+    # -----------------------------
+    elif command in [
+        "what is my next topic",
+        "what should i learn next",
+        "next topic",
+        "next lesson",
+        "next step",
+        "continue my roadmap"
+    ]:
+        return "NEXT_TOPIC"
+
+    # -----------------------------
+    # Mark Completed
+    # -----------------------------
+    elif (
+        command.startswith("mark ")
+        and command.endswith(" completed")
+    ):
+        return "MARK_COMPLETED"
+
+    # -----------------------------
     # Comparison
     # -----------------------------
     elif (

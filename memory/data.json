@@ -1,4 +1,9 @@
 {
-    "favorite_car": "bmw 7 series",
-    "favorite-car": "bmw 7 series"
+    "favorite_car": "bmw",
+    "current_goal": "Ai Engineer",
+    "goal_progress": {
+        "Ai Engineer": [
+            "Learn Python"
+        ]
+    }
 }

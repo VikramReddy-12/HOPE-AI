@@ -1,14 +1,35 @@
+"""
+HOPE Router
+
+Routes the detected intent to the
+appropriate HOPE module.
+"""
+
 from assistant.commands import process_command
+
 from memory.manager import remember, recall
+
 from conversation.manager import get_last_user_message
 from conversation.summary import summarize_conversation
+
 from knowledge.engine import search_knowledge
+
 from reasoning.engine import reason
+
+from goal.engine import process_goal
+from goal.roadmap import get_roadmap
+from goal.planner import get_today_plan
+from goal.progress import (
+    get_progress,
+    get_next_topic,
+    mark_completed
+)
 
 
 def route(result):
     """
-    Route the detected intent to the appropriate module.
+    Route the detected intent to the
+    appropriate module.
     """
 
     intent = result["intent"]
@@ -22,11 +43,14 @@ def route(result):
         return process_command(result["command"])
 
     # -----------------------------
-    # Time / Date
+    # Time
     # -----------------------------
     elif intent == "TIME_REQUEST":
         return process_command(result["command"])
 
+    # -----------------------------
+    # Date
+    # -----------------------------
     elif intent == "DATE_REQUEST":
         return process_command(result["command"])
 
@@ -90,6 +114,112 @@ def route(result):
         return "Usage: recall <key>"
 
     # -----------------------------
+    # Goal Detection
+    # -----------------------------
+    elif intent == "GOAL":
+
+        command = result["command"]
+
+        goal_result = process_goal(command)
+
+        if goal_result is None:
+            return "I couldn't identify your goal."
+
+        goal = goal_result["goal"]
+
+        return get_roadmap(goal)
+
+    # -----------------------------
+    # Goal Recall
+    # -----------------------------
+    elif intent == "GOAL_RECALL":
+
+        goal = recall("current_goal")
+
+        if goal is None:
+            return "You haven't told me your goal yet."
+
+        return f"🎯 Your current goal is:\n\n{goal}"
+
+    # -----------------------------
+    # Study Plan
+    # -----------------------------
+    elif intent == "STUDY_PLAN":
+
+        goal = recall("current_goal")
+
+        if goal is None:
+            return (
+                "You haven't set a goal yet.\n\n"
+                "Try saying:\n"
+                "'I want to become AI Engineer'"
+            )
+
+        return get_today_plan(goal)
+
+    # -----------------------------
+    # Progress
+    # -----------------------------
+    elif intent == "PROGRESS":
+
+        goal = recall("current_goal")
+
+        if goal is None:
+            return "You haven't set a goal yet."
+
+        return get_progress(goal)
+
+    # -----------------------------
+    # Next Topic
+    # -----------------------------
+    elif intent == "NEXT_TOPIC":
+
+        goal = recall("current_goal")
+
+        if goal is None:
+            return "You haven't set a goal yet."
+
+        topic = get_next_topic(goal)
+
+        if topic is None:
+            return (
+                "🎉 Congratulations!\n"
+                "You have completed your roadmap."
+            )
+
+        return (
+            "📘 Your next topic is:\n\n"
+            f"{topic}"
+        )
+
+    # -----------------------------
+    # Mark Completed
+    # -----------------------------
+    elif intent == "MARK_COMPLETED":
+
+        goal = recall("current_goal")
+
+        if goal is None:
+            return "You haven't set a goal yet."
+
+        command = result["command"]
+
+        topic = (
+            command.replace("mark", "")
+                   .replace("completed", "")
+                   .strip()
+                   .title()
+        )
+
+        message = mark_completed(goal, topic)
+
+        progress = get_progress(goal)
+
+        return (
+            f"{message}\n\n{progress}"
+        )
+
+    # -----------------------------
     # Conversation
     # -----------------------------
     elif intent == "LAST_USER_MESSAGE":
@@ -126,7 +256,12 @@ def route(result):
 
         command = result["command"]
 
-        return reason(command)
+        response = reason(command)
+
+        if response is not None:
+            return response
+
+        return "I couldn't compare those topics."
 
     # -----------------------------
     # Recommendation
@@ -135,7 +270,12 @@ def route(result):
 
         command = result["command"]
 
-        return reason(command)
+        response = reason(command)
+
+        if response is not None:
+            return response
+
+        return "I don't have a recommendation."
 
     # -----------------------------
     # Exit
