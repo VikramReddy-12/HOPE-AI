@@ -1,14 +1,33 @@
 """
 HOPE Intent Detection Engine
 
-This module detects the user's intent before the
-request is sent to the Router.
+Detects user intent from natural language commands.
+
+Supported intent groups:
+
+- Basic conversation
+- System commands
+- Health and diagnostics
+- Recovery
+- Recovery history
+- Recovery intelligence
+- Recovery patterns
+- Recovery trends
+- Predictive failure intelligence
+- Memory
+- Goals
+- Study planning
+- Progress
+- Conversation
+- Knowledge
+- Reasoning
+- Exit
 """
 
 
 def detect_intent(command):
     """
-    Detect the user's intent.
+    Detect the intent of a user command.
 
     Parameters:
         command (str): User input.
@@ -17,217 +36,493 @@ def detect_intent(command):
         str: Detected intent.
     """
 
-    command = command.lower().strip()
+    # ========================================================
+    # NORMALIZE COMMAND
+    # ========================================================
 
-    # Remove common punctuation
-    command = (
-        command.replace("?", "")
-               .replace(".", "")
-               .replace("!", "")
-    )
+    if command is None:
 
-    # -----------------------------
-    # Greetings
-    # -----------------------------
+        return "UNKNOWN"
+
+    command = str(
+        command
+    ).strip().lower()
+
+    if not command:
+
+        return "UNKNOWN"
+
+    # ========================================================
+    # EXIT
+    # ========================================================
+
     if command in [
-        "hello",
-        "hi",
-        "hey"
+        "exit",
+        "quit",
+        "bye",
+        "goodbye",
+        "close",
+        "shutdown",
     ]:
+
+        return "EXIT"
+
+    # ========================================================
+    # GREETING
+    # ========================================================
+
+    if command in [
+        "hi",
+        "hello",
+        "hey",
+        "hey hope",
+        "hello hope",
+        "hi hope",
+        "good morning",
+        "good afternoon",
+        "good evening",
+    ]:
+
         return "GREETING"
 
-    # -----------------------------
-    # Time / Date
-    # -----------------------------
-    elif "time" in command:
+    # ========================================================
+    # TIME
+    # ========================================================
+
+    if command in [
+        "time",
+        "what time is it",
+        "current time",
+        "tell me the time",
+    ]:
+
         return "TIME_REQUEST"
 
-    elif "date" in command:
+    # ========================================================
+    # DATE
+    # ========================================================
+
+    if command in [
+        "date",
+        "what is the date",
+        "today's date",
+        "todays date",
+        "current date",
+        "tell me the date",
+    ]:
+
         return "DATE_REQUEST"
 
-    # -----------------------------
-    # Help
-    # -----------------------------
-    elif "help" in command:
+    # ========================================================
+    # ABOUT
+    # ========================================================
+
+    if command in [
+        "about",
+        "about hope",
+        "who are you",
+        "what are you",
+        "tell me about yourself",
+    ]:
+
+        return "ABOUT"
+
+    # ========================================================
+    # VERSION
+    # ========================================================
+
+    if command in [
+        "version",
+        "hope version",
+        "what version are you",
+        "current version",
+    ]:
+
+        return "VERSION"
+
+    # ========================================================
+    # COPYRIGHT
+    # ========================================================
+
+    if command in [
+        "copyright",
+        "who created you",
+        "who made you",
+        "who is your creator",
+    ]:
+
+        return "COPYRIGHT"
+
+    # ========================================================
+    # HELP
+    # ========================================================
+
+    if command in [
+        "help",
+        "commands",
+        "show commands",
+        "available commands",
+    ]:
+
         return "HELP"
 
-    # -----------------------------
-    # Conversation
-    # -----------------------------
-    elif command in [
-        "what did i just say",
-        "what was my last message",
-        "repeat my last message"
-    ]:
-        return "LAST_USER_MESSAGE"
+    if command.startswith(
+        "help "
+    ):
 
-    elif command in [
-        "what did we talk about",
-        "summarize our conversation",
-        "conversation summary",
-        "summarize the conversation"
-    ]:
-        return "CONVERSATION_SUMMARY"
+        return "HELP"
 
-    # -----------------------------
-    # Memory
-    # -----------------------------
-    elif command.startswith("remember "):
+    # ========================================================
+    # RECOVERY INTELLIGENCE
+    # ========================================================
+
+    if command in [
+        "recovery intelligence",
+        "recovery analysis",
+        "recovery statistics",
+        "recovery insights",
+        "recovery recommendation",
+        "problem modules",
+    ]:
+
+        return "RECOVERY_INTELLIGENCE"
+
+    # ========================================================
+    # RECOVERY PATTERN INTELLIGENCE
+    # ========================================================
+
+    if command in [
+        "recovery patterns",
+        "recovery pattern",
+        "module reliability",
+        "failure patterns",
+    ]:
+
+        return "RECOVERY_PATTERNS"
+
+    # ========================================================
+    # RECOVERY TREND INTELLIGENCE
+    # ========================================================
+
+    if command in [
+        "recovery trend",
+        "recovery trends",
+        "recovery trend analysis",
+        "recovery frequency",
+    ]:
+
+        return "RECOVERY_TRENDS"
+
+    # ========================================================
+    # PREDICTIVE FAILURE INTELLIGENCE
+    # ========================================================
+
+    if command in [
+        "predict failures",
+        "failure prediction",
+        "predictive failure",
+        "failure risk",
+        "module risk",
+        "risk analysis",
+        "predict recovery failures",
+    ]:
+
+        return "PREDICTIVE_FAILURE"
+
+    # ========================================================
+    # RECOVERY HISTORY
+    # ========================================================
+
+    if command in [
+        "recovery history",
+        "show recovery history",
+        "recovery log",
+        "show recovery log",
+    ]:
+
+        return "RECOVERY_HISTORY"
+
+    # ========================================================
+    # LAST RECOVERY
+    # ========================================================
+
+    if command in [
+        "last recovery",
+        "what was the last recovery",
+        "show last recovery",
+        "latest recovery",
+        "last recovery event",
+    ]:
+
+        return "LAST_RECOVERY"
+
+    # ========================================================
+    # AUTOMATIC RECOVERY
+    # ========================================================
+
+    if command in [
+        "recover",
+        "auto recover",
+        "automatic recovery",
+        "recover system",
+        "run recovery",
+        "repair hope",
+        "fix system",
+    ]:
+
+        return "RECOVERY"
+
+    # ========================================================
+    # HEALTH
+    # ========================================================
+
+    if command in [
+        "health",
+        "system health",
+        "health check",
+        "check health",
+        "is hope healthy",
+    ]:
+
+        return "HEALTH"
+
+    # ========================================================
+    # STATUS
+    # ========================================================
+
+    if command in [
+        "status",
+        "system status",
+        "current status",
+        "hope status",
+    ]:
+
+        return "STATUS"
+
+    # ========================================================
+    # DIAGNOSTICS
+    # ========================================================
+
+    if command in [
+        "diagnostics",
+        "system diagnostics",
+        "run diagnostics",
+        "check system",
+    ]:
+
+        return "STATUS"
+
+    # ========================================================
+    # MEMORY SAVE
+    # ========================================================
+
+    if command.startswith(
+        "remember "
+    ):
+
         return "MEMORY_SAVE"
 
-    elif command.startswith("recall "):
+    if command.startswith(
+        "save memory "
+    ):
+
+        return "MEMORY_SAVE"
+
+    # ========================================================
+    # MEMORY RECALL
+    # ========================================================
+
+    if command.startswith(
+        "recall "
+    ):
+
         return "MEMORY_RECALL"
 
-    # -----------------------------
-    # Goal Detection
-    # -----------------------------
-    elif (
-        command.startswith("i want to become ")
-        or command.startswith("i want to be ")
-        or command.startswith("i want to learn ")
-        or command.startswith("my goal is ")
-        or command.startswith("i want a career in ")
-        or command.startswith("i want a job as ")
-        or command.startswith("i would like to become ")
+    if command.startswith(
+        "remember what "
     ):
-        return "GOAL"
 
-    # -----------------------------
-    # Goal Recall
-    # -----------------------------
-    elif command in [
-        "what is my goal",
-        "what's my goal",
-        "show my goal",
+        return "MEMORY_RECALL"
+
+    # ========================================================
+    # GOAL RECALL
+    # ========================================================
+
+    if command in [
         "my goal",
-        "current goal"
+        "current goal",
+        "what is my goal",
+        "show my goal",
+        "what's my goal",
+        "recall my goal",
     ]:
+
         return "GOAL_RECALL"
 
-    # -----------------------------
-    # Study Planner
-    # -----------------------------
-    elif command in [
-        "what should i study today",
+    # ========================================================
+    # STUDY PLAN
+    # ========================================================
+
+    if command in [
+        "today plan",
+        "today's plan",
+        "todays plan",
         "study plan",
-        "today's study plan",
-        "todays study plan",
-        "create a study plan",
-        "show my study plan",
-        "plan my study",
-        "what should i learn today"
+        "my plan",
+        "today study plan",
+        "what should i study",
+        "what should i learn today",
     ]:
+
         return "STUDY_PLAN"
 
-    # -----------------------------
-    # Progress
-    # -----------------------------
-    elif command in [
-        "show my progress",
-        "my progress",
+    # ========================================================
+    # PROGRESS
+    # ========================================================
+
+    if command in [
         "progress",
-        "learning progress",
-        "goal progress"
+        "my progress",
+        "show progress",
+        "check progress",
+        "goal progress",
     ]:
+
         return "PROGRESS"
 
-    # -----------------------------
-    # Next Topic
-    # -----------------------------
-    elif command in [
-        "what is my next topic",
-        "what should i learn next",
+    # ========================================================
+    # NEXT TOPIC
+    # ========================================================
+
+    if command in [
         "next topic",
-        "next lesson",
+        "what next",
+        "what should i learn next",
+        "next",
         "next step",
-        "continue my roadmap"
     ]:
+
         return "NEXT_TOPIC"
 
-    # -----------------------------
-    # Mark Completed
-    # -----------------------------
-    elif (
+    # ========================================================
+    # MARK COMPLETED
+    # ========================================================
+
+    if (
         command.startswith("mark ")
         and command.endswith(" completed")
     ):
+
         return "MARK_COMPLETED"
 
-    # -----------------------------
-    # Comparison
-    # -----------------------------
-    elif (
+    # ========================================================
+    # GOAL DETECTION
+    # ========================================================
+
+    goal_phrases = [
+        "i want to",
+        "my goal is",
+        "i want",
+        "my target is",
+        "i plan to",
+        "i need to become",
+        "i would like to become",
+    ]
+
+    for phrase in goal_phrases:
+
+        if command.startswith(
+            phrase
+        ):
+
+            return "GOAL"
+
+    # ========================================================
+    # LAST USER MESSAGE
+    # ========================================================
+
+    if command in [
+        "what did i say",
+        "what did i just say",
+        "what was my last message",
+        "last message",
+        "my last message",
+        "what did i tell you",
+    ]:
+
+        return "LAST_USER_MESSAGE"
+
+    # ========================================================
+    # CONVERSATION SUMMARY
+    # ========================================================
+
+    if command in [
+        "summary",
+        "conversation summary",
+        "summarize conversation",
+        "summarize our conversation",
+        "what did we talk about",
+        "summarize our chat",
+    ]:
+
+        return "CONVERSATION_SUMMARY"
+
+    # ========================================================
+    # COMPARISON
+    # ========================================================
+
+    if (
         command.startswith("compare ")
-        or command.startswith("compare between ")
-        or command.startswith("difference between ")
-        or command.startswith("difference of ")
         or " vs " in command
         or " versus " in command
-        or " compare " in command
-        or " or " in command
+        or command.startswith("difference between ")
     ):
+
         return "COMPARE"
 
-    # -----------------------------
-    # Recommendation
-    # -----------------------------
-    elif (
-        command.startswith("should i ")
-        or command.startswith("recommend ")
-        or command.startswith("which is better")
-        or command.startswith("which language")
-        or command.startswith("best language")
-        or command.startswith("best programming language")
-        or command.startswith("what should i learn")
-        or command.startswith("which should i choose")
-        or command.startswith("which one is better")
+    # ========================================================
+    # RECOMMENDATION
+    # ========================================================
+
+    if (
+        command.startswith("recommend ")
+        or command.startswith("recommendation ")
+        or command.startswith("suggest ")
+        or command.startswith("which is better ")
+        or command.startswith("what should i buy ")
+        or command.startswith("what should i choose ")
     ):
+
         return "RECOMMEND"
 
-    # -----------------------------
-    # Knowledge Search
-    # -----------------------------
-    elif (
-        command.startswith("what is ")
-        or command.startswith("what are ")
-        or command.startswith("who is ")
-        or command.startswith("who created ")
-        or command.startswith("who invented ")
-        or command.startswith("tell me about ")
-        or command.startswith("explain ")
-        or command.startswith("when was ")
-        or command.startswith("when did ")
-        or command.startswith("advantages of ")
-        or command.startswith("disadvantages of ")
-        or command.startswith("pros of ")
-        or command.startswith("cons of ")
-        or command.startswith("benefits of ")
-        or command.startswith("drawbacks of ")
-        or command.startswith("uses of ")
-        or command.startswith("purpose of ")
-        or command.startswith("best for ")
-        or command.startswith("is ")
-        or "used for" in command
-        or "advantages" in command
-        or "disadvantages" in command
-        or "benefits" in command
-        or "pros" in command
-        or "cons" in command
-        or "best for" in command
-        or "beginner" in command
-        or "easy" in command
-        or "hard" in command
-    ):
-        return "KNOWLEDGE_SEARCH"
+    # ========================================================
+    # KNOWLEDGE SEARCH
+    # ========================================================
 
-    # -----------------------------
-    # Exit
-    # -----------------------------
-    elif command == "exit":
-        return "EXIT"
+    knowledge_phrases = [
+        "what is ",
+        "what are ",
+        "who is ",
+        "tell me about ",
+        "explain ",
+        "information about ",
+        "info about ",
+        "how does ",
+        "why does ",
+        "why is ",
+        "define ",
+    ]
 
-    # -----------------------------
-    # Unknown
-    # -----------------------------
-    else:
-        return "UNKNOWN"
+    for phrase in knowledge_phrases:
+
+        if command.startswith(
+            phrase
+        ):
+
+            return "KNOWLEDGE_SEARCH"
+
+    # ========================================================
+    # UNKNOWN
+    # ========================================================
+
+    return "UNKNOWN"

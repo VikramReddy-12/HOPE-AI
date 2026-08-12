@@ -13,6 +13,8 @@ from core.version import (
     AUTHOR,
 )
 
+from core.modules import get_active_modules
+
 
 def show_banner():
     """
@@ -36,21 +38,26 @@ def show_banner():
     print(f"Status : {STATUS.upper()}")
     print()
 
+    # ========================================================
+    # DYNAMIC MODULE LIST
+    # ========================================================
+
     print("Loading Modules")
     print("-" * 30)
-    print("✓ Brain Engine")
-    print("✓ Knowledge Engine")
-    print("✓ Memory Engine")
-    print("✓ Context Engine")
-    print("✓ Reasoning Engine")
-    print("✓ Goal Engine")
-    print("✓ Planner Engine")
-    print("✓ Progress Engine")
+
+    modules = get_active_modules()
+
+    for module in modules:
+        print(f"✓ {module['name']}")
+
+    # ========================================================
+    # SYSTEM READY
+    # ========================================================
 
     print()
-
     print("System Ready")
     print("-" * 30)
+
     print("HOPE is ready to talk.")
     print("Type 'help' for available commands.")
     print("Type 'exit' to close HOPE.")
