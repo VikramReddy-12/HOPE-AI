@@ -26,3 +26,20 @@ def recall(key):
         return memory[key]
 
     return None
+
+
+def forget(key):
+    """
+    Forget saved information.
+    """
+
+    memory = load_memory()
+
+    if key not in memory:
+        return False
+
+    del memory[key]
+
+    save_memory(memory)
+
+    return True

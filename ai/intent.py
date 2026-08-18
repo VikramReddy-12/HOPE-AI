@@ -257,6 +257,163 @@ def detect_intent(command):
         return "LAST_RECOVERY"
 
     # ========================================================
+    # PREDICTIVE INTELLIGENCE
+    # ========================================================
+
+    if command in [
+        "predictive status",
+        "show predictive status",
+        "check predictive status",
+        "prediction status",
+        "show prediction status",
+        "hope predictive status",
+    ]:
+
+        return "PREDICTIVE_STATUS"
+
+    # ========================================================
+    # PREDICTIVE RISK
+    # ========================================================
+
+    if command in [
+        "predictive risk",
+        "system risk",
+        "check system risk",
+        "what is the system risk",
+        "what is the predictive risk",
+        "is there any predictive risk",
+        "current predictive risk",
+        "show predictive risk",
+    ]:
+
+        return "PREDICTIVE_RISK"
+
+    # ========================================================
+    # PREDICTIVE REPORT
+    # ========================================================
+
+    if command in [
+        "predictive report",
+        "show predictive report",
+        "complete predictive report",
+        "full predictive report",
+        "predictive intelligence report",
+        "show predictive intelligence report",
+        "predictive analysis report",
+        "show predictive analysis",
+    ]:
+
+        return "PREDICTIVE_REPORT"
+
+    # ========================================================
+    # MODULE RISK
+    # ========================================================
+
+    if command in [
+        "module risk",
+        "module risks",
+        "show module risk",
+        "show module risks",
+        "which module is at risk",
+        "which module needs attention",
+        "which engine is at risk",
+        "which engine needs attention",
+        "highest risk module",
+        "highest risk engine",
+    ]:
+
+        return "MODULE_RISK"
+
+    # ========================================================
+    # PREDICTIVE SYSTEM HEALTH
+    # ========================================================
+
+    if command in [
+        "predictive health",
+        "predictive system health",
+        "check predictive health",
+        "is hope predictively healthy",
+        "predictive health status",
+    ]:
+
+        return "SYSTEM_HEALTH"
+
+    # ========================================================
+    # PREDICTIVE DECISION
+    # ========================================================
+
+    if command in [
+        "predictive decision",
+        "show predictive decision",
+        "show predictive decisions",
+        "predictive action decision",
+        "predictive action decisions",
+        "show predictive action decision",
+        "show predictive action decisions",
+        "what should hope do about the risk",
+        "what should we do about the risk",
+        "what should we do about the knowledge engine",
+        "what action should be taken",
+        "show predictive actions",
+    ]:
+        return "PREDICTIVE_DECISION"
+
+    # ========================================================
+    # PREDICTIVE RECOMMENDATION
+    # ========================================================
+
+    if command in [
+        "predictive recommendation",
+        "predictive recommendations",
+        "what does hope recommend about the risk",
+        "what should i do about the system risk",
+        "what action should i take about the risk",
+        "what action should hope take",
+        "which module should i investigate",
+        "what should i investigate",
+    ]:
+
+        return "PREDICTIVE_RECOMMENDATION"
+
+    # ========================================================
+    # PREDICTIVE EXPLANATION
+    # ========================================================
+
+    if (
+        command in [
+            "predictive explanation",
+            "predictive explanations",
+            "explain predictive risk",
+            "explain the predictive risk",
+            "why is the system at risk",
+            "why is the system risky",
+            "why is the module at risk",
+            "why is this module at risk",
+            "why is the knowledge engine at risk",
+            "why is the brain engine at risk",
+            "why is the context engine at risk",
+            "why is the goal engine at risk",
+            "why is the memory engine at risk",
+            "why is the planner engine at risk",
+            "why is the progress engine at risk",
+            "why is the reasoning engine at risk",
+            "why is knowledge engine at risk",
+            "why is brain engine at risk",
+            "why is context engine at risk",
+            "why is goal engine at risk",
+            "why is memory engine at risk",
+            "why is planner engine at risk",
+            "why is progress engine at risk",
+            "why is reasoning engine at risk",
+        ]
+        or command.startswith("why is ")
+        and " at risk" in command
+        or command.startswith("explain predictive")
+    ):
+
+        return "PREDICTIVE_EXPLANATION"
+
+    # ========================================================
     # AUTOMATIC RECOVERY
     # ========================================================
 
@@ -524,5 +681,20 @@ def detect_intent(command):
     # ========================================================
     # UNKNOWN
     # ========================================================
+
+    # ========================================================
+    # MEMORY FORGET
+    # ========================================================
+
+    # Detect explicit memory-removal commands before the generic
+    # UNKNOWN fallback.
+    if command.startswith("forget "):
+        return "FORGET"
+
+    if command.startswith("delete memory "):
+        return "FORGET"
+
+    if command.startswith("remove memory "):
+        return "FORGET"
 
     return "UNKNOWN"
