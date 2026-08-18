@@ -17,8 +17,8 @@ FULL_NAME = "Helping Optimize Potential Everyday"
 # Version Information
 # ==========================================================
 
-VERSION = "v1.2"
-CODENAME = "Goal Intelligence"
+VERSION = "v1.4"
+CODENAME = "Predictive Intelligence & Decision Safety"
 STATUS = "Stable"
 
 # ==========================================================
