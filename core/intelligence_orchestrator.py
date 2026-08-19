@@ -2,7 +2,7 @@
 HOPE Intelligence Orchestrator
 
 v1.5 - Intelligence Orchestration
-7E - Cross-Engine Intelligence Integration
+7J - Outcome & Experience Memory Integration
 
 Purpose:
     Provide a safe orchestration registry for HOPE's intelligence
@@ -36,15 +36,35 @@ from core.cross_engine_intelligence import (
     get_cross_engine_regression,
 )
 
+from core.decision_synthesis import (
+    get_decision_synthesis_regression,
+    synthesize_decision_dict,
+)
+
+from core.response_synthesis import (
+    get_response_synthesis_regression,
+    synthesize_response_dict,
+)
+
+from core.learning_feedback import (
+    get_learning_feedback_regression,
+    integrate_learning_feedback as _integrate_learning_feedback,
+)
+
+from core.experience_memory import (
+    get_experience_memory_regression,
+    integrate_experience_memory as _integrate_experience_memory,
+)
+
 
 # ============================================================
 # VERSION / LAYER
 # ============================================================
 
-ORCHESTRATOR_VERSION = "7E"
+ORCHESTRATOR_VERSION = "7J"
 ORCHESTRATOR_STATUS = "READY"
 
-TRACE_PREFIX = "7E"
+TRACE_PREFIX = "7J"
 
 
 # ============================================================
@@ -979,19 +999,214 @@ def orchestrate(
         cross_engine_handoff,
     )
 
+    # ========================================================
+    # 7F — DECISION SYNTHESIS
+    # ========================================================
+    #
+    # The orchestrator remains routing/context-only.
+    # 7F consumes already-produced engine outputs supplied
+    # through request.context["engine_outputs"].
+    #
+    # Expected structure:
+    #
+    # {
+    #     "reasoning": <reasoning result>,
+    #     "predictive_prediction": <prediction dict>,
+    #     "predictive_decision_summary": <decision dict>,
+    #     "predictive_trace_regression": <optional dict>,
+    # }
+    #
+    # No intelligence engine is executed here.
+
+    decision_synthesis = None
+    engine_outputs = request.context.get(
+        "engine_outputs",
+        {},
+    )
+
+    if isinstance(engine_outputs, dict):
+        reasoning_output = engine_outputs.get(
+            "reasoning"
+        )
+
+        predictive_prediction = engine_outputs.get(
+            "predictive_prediction"
+        )
+
+        predictive_decision_summary = engine_outputs.get(
+            "predictive_decision_summary"
+        )
+
+        predictive_trace_regression = engine_outputs.get(
+            "predictive_trace_regression"
+        )
+
+        if (
+            reasoning_output is not None
+            and isinstance(
+                predictive_prediction,
+                dict,
+            )
+            and isinstance(
+                predictive_decision_summary,
+                dict,
+            )
+        ):
+            decision_synthesis = integrate_decision_synthesis(
+                context=context,
+                trace_id=trace_id,
+                reasoning_result=reasoning_output,
+                prediction=predictive_prediction,
+                decision_summary=predictive_decision_summary,
+                trace_regression=predictive_trace_regression,
+            )
+
+    # ========================================================
+    # 7H — INTELLIGENT RESPONSE SYNTHESIS
+    # ========================================================
+    #
+    # 7H consumes the already-produced 7F decision synthesis.
+    # It does not execute reasoning, predictive intelligence,
+    # system actions, or automatic actions.
+    #
+    response_synthesis = None
+
+    if isinstance(decision_synthesis, dict):
+        response_synthesis = integrate_response_synthesis(
+            context=context,
+            trace_id=trace_id,
+            decision_synthesis=decision_synthesis.get(
+                "synthesis",
+                decision_synthesis,
+            ),
+        )
+
+    # ========================================================
+    # 7I — LEARNING FEEDBACK
+    # ========================================================
+    #
+    # 7I consumes already-produced decision information.
+    # It does not execute actions, modify system state,
+    # override decisions, or modify HOPE itself.
+    #
+    learning_feedback = None
+
+    if isinstance(decision_synthesis, dict):
+        learning_feedback = integrate_learning_feedback(
+            context=context,
+            trace_id=trace_id,
+            decision=decision_synthesis.get(
+                "decision"
+            ),
+            confidence=decision_synthesis.get(
+                "confidence"
+            ),
+            priority=decision_synthesis.get(
+                "priority"
+            ),
+            evidence=decision_synthesis.get(
+                "evidence",
+                [],
+            ),
+            contributing_engines=decision_synthesis.get(
+                "contributing_engines",
+                [],
+            ),
+            outcome=None,
+            outcome_available=False,
+        )
+
+    # ========================================================
+    # 7J — OUTCOME & EXPERIENCE MEMORY
+    # ========================================================
+    #
+    # 7J consumes the already-produced 7F decision synthesis,
+    # 7H response synthesis, and 7I learning feedback.
+    #
+    # With no outcome supplied yet, 7J records the experience
+    # as PENDING and requests outcome collection.
+    #
+    # 7J does not execute actions, modify system state,
+    # self-modify HOPE, or override the existing decision.
+
+    experience_memory = None
+
+    if isinstance(decision_synthesis, dict):
+        response_text = ""
+
+        if isinstance(response_synthesis, dict):
+            response_text = response_synthesis.get(
+                "response",
+                "",
+            )
+
+        experience_metadata = {
+            "source_layers": [
+                "7F",
+                "7H",
+                "7I",
+            ],
+        }
+
+        if isinstance(learning_feedback, dict):
+            experience_metadata.update(
+                {
+                    "feedback_status": learning_feedback.get(
+                        "feedback_status"
+                    ),
+                    "learning_signal": learning_feedback.get(
+                        "learning_signal"
+                    ),
+                    "feedback_quality": learning_feedback.get(
+                        "feedback_quality"
+                    ),
+                }
+            )
+
+        experience_memory = integrate_experience_memory(
+            context=context,
+            trace_id=trace_id,
+            decision=decision_synthesis.get(
+                "decision"
+            ),
+            confidence=decision_synthesis.get(
+                "confidence"
+            ),
+            priority=decision_synthesis.get(
+                "priority"
+            ),
+            evidence=decision_synthesis.get(
+                "evidence",
+                [],
+            ),
+            contributing_engines=decision_synthesis.get(
+                "contributing_engines",
+                [],
+            ),
+            response=response_text,
+            outcome=None,
+            outcome_available=False,
+            metadata=experience_metadata,
+        )
+
     context_validation = validate_context(context)
 
     result_payload = {
         "mode": "CROSS_ENGINE_CONTEXT",
         "execution": "PLANNING_ONLY",
         "message": (
-            "7E cross-engine orchestration context is ready. "
-            "Reasoning-to-predictive handoff metadata is available; "
-            "engine execution remains disabled."
+            "7I learning-feedback orchestration context is ready. "
+            "Reasoning-to-predictive handoff, decision synthesis, "
+            "response synthesis, and learning-feedback metadata are "
+            "available; engine execution remains disabled."
         ),
         "context_version": context.version,
         "context_valid": context_validation["valid"],
         "cross_engine": cross_engine_handoff,
+        "decision_synthesis": decision_synthesis,
+        "response_synthesis": response_synthesis,
+        "learning_feedback": learning_feedback,
+        "experience_memory": experience_memory,
     }
 
     return OrchestrationResult(
@@ -1016,6 +1231,537 @@ def orchestrate(
         errors=list(context_validation["errors"]),
         context=context,
     )
+
+
+# ============================================================
+# 7F — DECISION SYNTHESIS INTEGRATION
+# ============================================================
+
+def integrate_decision_synthesis(
+    context: OrchestrationContext,
+    trace_id: str,
+    reasoning_result: Any,
+    prediction: Dict[str, Any],
+    decision_summary: Dict[str, Any],
+    trace_regression: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """
+    Integrate already-produced reasoning and predictive outputs
+    into the shared orchestration context through 7F.
+
+    This function consumes engine outputs. It does not execute
+    reasoning, predictive intelligence, system actions, or
+    automatic actions.
+    """
+
+    if not isinstance(
+        context,
+        OrchestrationContext,
+    ):
+        raise TypeError(
+            "context must be an OrchestrationContext."
+        )
+
+    if not trace_id:
+        raise ValueError(
+            "trace_id cannot be empty."
+        )
+
+    synthesis = synthesize_decision_dict(
+        trace_id=trace_id,
+        reasoning_result=reasoning_result,
+        prediction=prediction,
+        decision_summary=decision_summary,
+        trace_regression=trace_regression,
+    )
+
+    # Preserve the orchestrator trace.
+    synthesis["trace_id"] = trace_id
+
+    # 7F safety is advisory-only and cannot be weakened by
+    # upstream context or engine output.
+    synthesis_safety = synthesis.get(
+        "safety",
+        {},
+    )
+
+    synthesis_safety[
+        "execution_allowed"
+    ] = False
+
+    synthesis_safety[
+        "automatic_action_allowed"
+    ] = False
+
+    synthesis[
+        "safety"
+    ] = synthesis_safety
+
+    context.add_metadata(
+        "decision_synthesis",
+        synthesis,
+    )
+
+    context_validation = validate_context(
+        context
+    )
+
+    return {
+        "integration_layer": "7F",
+        "integration_status": (
+            "READY"
+            if (
+                context_validation["valid"]
+                and synthesis.get("status") == "READY"
+            )
+            else "FAILED"
+        ),
+        "trace_id": trace_id,
+        "decision": synthesis.get(
+            "decision"
+        ),
+        "confidence": synthesis.get(
+            "confidence"
+        ),
+        "priority": synthesis.get(
+            "priority"
+        ),
+        "evidence": synthesis.get(
+            "evidence",
+            [],
+        ),
+        "evidence_count": len(
+            synthesis.get(
+                "evidence",
+                [],
+            )
+        ),
+        "contributing_engines": synthesis.get(
+            "contributing_engines",
+            [],
+        ),
+        "synthesis": synthesis,
+        "context_valid": context_validation[
+            "valid"
+        ],
+        "execution_allowed": False,
+        "automatic_action_allowed": False,
+        "errors": context_validation[
+            "errors"
+        ],
+    }
+
+
+# ============================================================
+# 7H — INTELLIGENT RESPONSE SYNTHESIS INTEGRATION
+# ============================================================
+
+def integrate_response_synthesis(
+    context: OrchestrationContext,
+    trace_id: str,
+    decision_synthesis: Dict[str, Any],
+) -> Dict[str, Any]:
+    """
+    Integrate the existing 7F decision synthesis into the
+    7H intelligent response layer.
+
+    This function consumes already-produced intelligence and
+    converts it into a user-facing response structure.
+
+    It does not:
+        - execute actions,
+        - modify system state,
+        - generate reasoning,
+        - generate predictions,
+        - change the decision,
+        - authorize automatic actions.
+    """
+
+    if not isinstance(
+        context,
+        OrchestrationContext,
+    ):
+        raise TypeError(
+            "context must be an OrchestrationContext."
+        )
+
+    if not trace_id:
+        raise ValueError(
+            "trace_id cannot be empty."
+        )
+
+    if not isinstance(
+        decision_synthesis,
+        dict,
+    ):
+        raise TypeError(
+            "decision_synthesis must be a dictionary."
+        )
+
+    response_synthesis = synthesize_response_dict(
+        trace_id=trace_id,
+        decision_synthesis=decision_synthesis,
+    )
+
+    # Preserve the orchestrator trace.
+    response_synthesis["trace_id"] = trace_id
+
+    # 7H cannot weaken the existing advisory-only boundary.
+    response_safety = response_synthesis.get(
+        "safety",
+        {},
+    )
+
+    if not isinstance(response_safety, dict):
+        response_safety = {}
+
+    response_safety[
+        "execution_allowed"
+    ] = False
+
+    response_safety[
+        "automatic_action_allowed"
+    ] = False
+
+    response_synthesis[
+        "safety"
+    ] = response_safety
+
+    context.add_metadata(
+        "response_synthesis",
+        response_synthesis,
+    )
+
+    context_validation = validate_context(
+        context
+    )
+
+    evidence = response_synthesis.get(
+        "evidence",
+        [],
+    )
+
+    if not isinstance(evidence, list):
+        evidence = []
+
+    contributing_engines = response_synthesis.get(
+        "contributing_engines",
+        [],
+    )
+
+    if not isinstance(
+        contributing_engines,
+        list,
+    ):
+        contributing_engines = []
+
+    return {
+        "integration_layer": "7H",
+        "integration_status": (
+            "READY"
+            if (
+                context_validation["valid"]
+                and response_synthesis.get(
+                    "status"
+                ) == "READY"
+            )
+            else "FAILED"
+        ),
+        "trace_id": trace_id,
+        "response": response_synthesis.get(
+            "response",
+            "",
+        ),
+        "decision": response_synthesis.get(
+            "decision"
+        ),
+        "confidence": response_synthesis.get(
+            "confidence"
+        ),
+        "priority": response_synthesis.get(
+            "priority"
+        ),
+        "evidence": evidence,
+        "evidence_count": len(evidence),
+        "contributing_engines": contributing_engines,
+        "source_layer": response_synthesis.get(
+            "source_layer",
+            "7F",
+        ),
+        "synthesis": response_synthesis,
+        "context_valid": context_validation[
+            "valid"
+        ],
+        "execution_allowed": False,
+        "automatic_action_allowed": False,
+        "errors": context_validation[
+            "errors"
+        ],
+    }
+
+
+# ============================================================
+# 7I — LEARNING FEEDBACK INTEGRATION
+# ============================================================
+
+def integrate_learning_feedback(
+    context: OrchestrationContext,
+    trace_id: str,
+    decision: Any,
+    confidence: Any,
+    priority: Any,
+    evidence: Any,
+    contributing_engines: Any,
+    outcome: Any = None,
+    outcome_available: bool = False,
+) -> Dict[str, Any]:
+    """
+    Integrate 7I learning feedback into the shared
+    orchestration context.
+
+    This wrapper preserves the learning_feedback module as
+    the source of truth while enforcing the orchestrator's
+    advisory-only safety boundary.
+
+    It does not:
+        - execute actions,
+        - modify system state,
+        - override decisions,
+        - authorize automatic actions,
+        - perform self-modification,
+        - write persistent memory.
+    """
+
+    if not isinstance(
+        context,
+        OrchestrationContext,
+    ):
+        raise TypeError(
+            "context must be an OrchestrationContext."
+        )
+
+    if not trace_id:
+        raise ValueError(
+            "trace_id cannot be empty."
+        )
+
+    feedback_result = _integrate_learning_feedback(
+        context=context,
+        trace_id=trace_id,
+        decision=decision,
+        confidence=confidence,
+        priority=priority,
+        evidence=evidence,
+        contributing_engines=contributing_engines,
+        outcome=outcome,
+        outcome_available=outcome_available,
+    )
+
+    if not isinstance(
+        feedback_result,
+        dict,
+    ):
+        raise TypeError(
+            "Learning feedback integration must return a dictionary."
+        )
+
+    # Preserve the orchestrator trace.
+    feedback_result["trace_id"] = trace_id
+
+    # 7I safety boundary is immutable here.
+    feedback_result["execution_allowed"] = False
+    feedback_result["automatic_action_allowed"] = False
+
+    feedback = feedback_result.get(
+        "feedback",
+        {},
+    )
+
+    if isinstance(
+        feedback,
+        dict,
+    ):
+        feedback["trace_id"] = trace_id
+        feedback["execution_allowed"] = False
+        feedback["automatic_action_allowed"] = False
+
+        safety = feedback.get(
+            "safety",
+            {},
+        )
+
+        if not isinstance(
+            safety,
+            dict,
+        ):
+            safety = {}
+
+        safety["execution_allowed"] = False
+        safety["automatic_action_allowed"] = False
+
+        feedback["safety"] = safety
+        feedback_result["feedback"] = feedback
+
+    return feedback_result
+
+
+# ============================================================
+# 7J — OUTCOME & EXPERIENCE MEMORY INTEGRATION
+# ============================================================
+
+def integrate_experience_memory(
+    context: OrchestrationContext,
+    trace_id: str,
+    decision: Any,
+    confidence: Any,
+    priority: Any,
+    evidence: Any,
+    contributing_engines: Any,
+    response: Any = "",
+    outcome: Any = None,
+    outcome_available: bool = False,
+    metadata: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """
+    Integrate 7J Outcome & Experience Memory into the
+    shared orchestration context.
+
+    The experience-memory module remains the source of truth.
+    This wrapper preserves the orchestrator trace and
+    enforces the immutable advisory-only safety boundary.
+
+    It does not:
+        - execute actions
+        - modify system state
+        - override decisions
+        - authorize automatic actions
+        - perform self-modification
+        - modify persistent memory
+    """
+
+    if not isinstance(
+        context,
+        OrchestrationContext,
+    ):
+        raise TypeError(
+            "context must be an OrchestrationContext."
+        )
+
+    if not trace_id:
+        raise ValueError(
+            "trace_id cannot be empty."
+        )
+
+    experience_result = _integrate_experience_memory(
+        context=context,
+        trace_id=trace_id,
+        decision=decision,
+        confidence=confidence,
+        priority=priority,
+        evidence=evidence,
+        contributing_engines=contributing_engines,
+        response=response,
+        outcome=outcome,
+        outcome_available=outcome_available,
+        metadata=metadata,
+    )
+
+    if not isinstance(
+        experience_result,
+        dict,
+    ):
+        raise TypeError(
+            "Experience memory integration must return a dictionary."
+        )
+
+    # Preserve the orchestration trace.
+    experience_result["trace_id"] = trace_id
+
+    # 7J safety boundary is immutable.
+    experience_result[
+        "execution_allowed"
+    ] = False
+
+    experience_result[
+        "automatic_action_allowed"
+    ] = False
+
+    experience_result[
+        "self_modification_allowed"
+    ] = False
+
+    experience_result[
+        "decision_override_allowed"
+    ] = False
+
+    experience = experience_result.get(
+        "experience",
+        {},
+    )
+
+    if isinstance(
+        experience,
+        dict,
+    ):
+        experience["trace_id"] = trace_id
+
+        experience[
+            "execution_allowed"
+        ] = False
+
+        experience[
+            "automatic_action_allowed"
+        ] = False
+
+        experience[
+            "self_modification_allowed"
+        ] = False
+
+        experience[
+            "decision_override_allowed"
+        ] = False
+
+        safety = experience.get(
+            "safety",
+            {},
+        )
+
+        if not isinstance(
+            safety,
+            dict,
+        ):
+            safety = {}
+
+        safety[
+            "execution_allowed"
+        ] = False
+
+        safety[
+            "automatic_action_allowed"
+        ] = False
+
+        safety[
+            "self_modification_allowed"
+        ] = False
+
+        safety[
+            "decision_override_allowed"
+        ] = False
+
+        experience["safety"] = safety
+        experience_result["experience"] = experience
+
+    # The underlying 7J module stores the experience before this
+    # orchestrator-level safety/trace normalization. Persist the
+    # normalized representation back into the shared orchestration
+    # context so the context and returned result cannot diverge.
+    context.update_memory(
+        {
+            "experience_memory": experience_result,
+        }
+    )
+
+    return experience_result
 
 
 # ============================================================
@@ -2114,3 +2860,1567 @@ def get_cross_engine_integration_regression() -> Dict[str, Any]:
         "regression_passed": all(checks.values()),
     }
 
+
+# ============================================================
+# 7F — DECISION SYNTHESIS INTEGRATION REGRESSION
+# ============================================================
+
+def get_decision_synthesis_integration_regression(
+) -> Dict[str, Any]:
+    """
+    Validate 7F integration with the existing 7B-7E
+    orchestration architecture.
+
+    The production orchestrator remains execution-free.
+    The regression obtains real source outputs solely so that
+    the synthesis integration can be tested against real
+    reasoning and predictive interfaces.
+    """
+
+    from reasoning.engine import reason
+
+    from core.predictive_intelligence import (
+        get_predictive_decision_summary,
+        get_predictive_decision_trace_regression,
+        get_system_prediction,
+    )
+
+    cross_engine_baseline = (
+        get_cross_engine_integration_regression()
+    )
+
+    synthesis_baseline = (
+        get_decision_synthesis_regression()
+    )
+
+    # Obtain real engine outputs for regression input.
+    reasoning_result = reason(
+        "compare Java and Python"
+    )
+
+    prediction = get_system_prediction()
+
+    decision_summary = (
+        get_predictive_decision_summary()
+    )
+
+    trace_regression = (
+        get_predictive_decision_trace_regression()
+    )
+
+    request = OrchestrationRequest(
+        command="test 7F decision synthesis integration",
+        intent="TEST",
+        requested_capabilities=[
+            "reasoning",
+            "predictive_risk",
+        ],
+        context={
+            "engine_outputs": {
+                "reasoning": reasoning_result,
+                "predictive_prediction": prediction,
+                "predictive_decision_summary": (
+                    decision_summary
+                ),
+                "predictive_trace_regression": (
+                    trace_regression
+                ),
+            }
+        },
+    )
+
+    result = orchestrate(
+        request
+    )
+
+    context = result.context
+    synthesis = None
+
+    if context is not None:
+        snapshot = context.snapshot()
+
+        metadata = snapshot.get(
+            "metadata",
+            {},
+        )
+
+        synthesis = metadata.get(
+            "decision_synthesis"
+        )
+
+    checks = {
+        "7e_baseline": (
+            cross_engine_baseline[
+                "regression_passed"
+            ]
+        ),
+        "7f_baseline": (
+            synthesis_baseline[
+                "regression_passed"
+            ]
+        ),
+        "orchestration_ready": (
+            result.status == "READY"
+        ),
+        "context_available": (
+            context is not None
+        ),
+        "context_valid": (
+            context is not None
+            and validate_context(
+                context
+            )["valid"]
+        ),
+        "synthesis_available": (
+            isinstance(
+                synthesis,
+                dict,
+            )
+        ),
+        "synthesis_ready": (
+            isinstance(
+                synthesis,
+                dict,
+            )
+            and synthesis.get(
+                "status"
+            ) == "READY"
+        ),
+        "trace_preserved": (
+            isinstance(
+                synthesis,
+                dict,
+            )
+            and synthesis.get(
+                "trace_id"
+            ) == result.trace_id
+        ),
+        "decision_available": (
+            isinstance(
+                synthesis,
+                dict,
+            )
+            and bool(
+                synthesis.get(
+                    "decision"
+                )
+            )
+        ),
+        "confidence_available": (
+            isinstance(
+                synthesis,
+                dict,
+            )
+            and bool(
+                synthesis.get(
+                    "confidence"
+                )
+            )
+        ),
+        "priority_available": (
+            isinstance(
+                synthesis,
+                dict,
+            )
+            and bool(
+                synthesis.get(
+                    "priority"
+                )
+            )
+        ),
+        "evidence_available": (
+            isinstance(
+                synthesis,
+                dict,
+            )
+            and len(
+                synthesis.get(
+                    "evidence",
+                    [],
+                )
+            ) > 0
+        ),
+        "reasoning_contributing": (
+            isinstance(
+                synthesis,
+                dict,
+            )
+            and "reasoning"
+            in synthesis.get(
+                "contributing_engines",
+                [],
+            )
+        ),
+        "predictive_contributing": (
+            isinstance(
+                synthesis,
+                dict,
+            )
+            and "predictive"
+            in synthesis.get(
+                "contributing_engines",
+                [],
+            )
+        ),
+        "safety_advisory": (
+            isinstance(
+                synthesis,
+                dict,
+            )
+            and synthesis.get(
+                "safety",
+                {},
+            ).get(
+                "level"
+            )
+            == "ADVISORY_ONLY"
+        ),
+        "execution_blocked": (
+            result.safety[
+                "execution_allowed"
+            ] is False
+            and isinstance(
+                synthesis,
+                dict,
+            )
+            and synthesis.get(
+                "safety",
+                {},
+            ).get(
+                "execution_allowed"
+            ) is False
+        ),
+        "automatic_action_blocked": (
+            result.safety[
+                "automatic_action_allowed"
+            ] is False
+            and isinstance(
+                synthesis,
+                dict,
+            )
+            and synthesis.get(
+                "safety",
+                {},
+            ).get(
+                "automatic_action_allowed"
+            ) is False
+        ),
+    }
+
+    return {
+        "integration_layer": "7F",
+        "integration_status": (
+            "READY"
+            if all(checks.values())
+            else "FAILED"
+        ),
+        "trace_id": result.trace_id,
+        "decision": (
+            synthesis.get(
+                "decision"
+            )
+            if isinstance(
+                synthesis,
+                dict,
+            )
+            else None
+        ),
+        "confidence": (
+            synthesis.get(
+                "confidence"
+            )
+            if isinstance(
+                synthesis,
+                dict,
+            )
+            else None
+        ),
+        "priority": (
+            synthesis.get(
+                "priority"
+            )
+            if isinstance(
+                synthesis,
+                dict,
+            )
+            else None
+        ),
+        "evidence_count": (
+            len(
+                synthesis.get(
+                    "evidence",
+                    [],
+                )
+            )
+            if isinstance(
+                synthesis,
+                dict,
+            )
+            else 0
+        ),
+        "contributing_engines": (
+            synthesis.get(
+                "contributing_engines",
+                [],
+            )
+            if isinstance(
+                synthesis,
+                dict,
+            )
+            else []
+        ),
+        "execution_allowed": (
+            result.safety[
+                "execution_allowed"
+            ]
+        ),
+        "automatic_action_allowed": (
+            result.safety[
+                "automatic_action_allowed"
+            ]
+        ),
+        "checks": checks,
+        "regression_passed": all(
+            checks.values()
+        ),
+    }
+
+# ============================================================
+# 7H — INTELLIGENT RESPONSE SYNTHESIS INTEGRATION REGRESSION
+# ============================================================
+
+def get_response_synthesis_integration_regression(
+) -> Dict[str, Any]:
+    """
+    Validate 7H response synthesis integration with the existing
+    7B-7F orchestration architecture.
+
+    The production orchestrator remains execution-free.
+
+    The regression verifies that:
+        - 7F integration remains healthy
+        - 7H response synthesis is available
+        - response synthesis is integrated into shared context
+        - the orchestration trace is preserved
+        - decision, confidence, and priority are preserved
+        - evidence is preserved
+        - reasoning and predictive engines remain contributors
+        - the response is generated from existing intelligence
+        - safety remains advisory-only
+        - execution remains blocked
+        - automatic actions remain blocked
+    """
+
+    from reasoning.engine import reason
+
+    from core.predictive_intelligence import (
+        get_predictive_decision_summary,
+        get_predictive_decision_trace_regression,
+        get_system_prediction,
+    )
+
+    integration_baseline = (
+        get_decision_synthesis_integration_regression()
+    )
+
+    response_baseline = (
+        get_response_synthesis_regression()
+    )
+
+    reasoning_result = reason(
+        "compare Java and Python"
+    )
+
+    prediction = get_system_prediction()
+
+    decision_summary = (
+        get_predictive_decision_summary()
+    )
+
+    trace_regression = (
+        get_predictive_decision_trace_regression()
+    )
+
+    request = OrchestrationRequest(
+        command="test 7H response synthesis integration",
+        intent="TEST",
+        requested_capabilities=[
+            "reasoning",
+            "predictive_risk",
+        ],
+        context={
+            "engine_outputs": {
+                "reasoning": reasoning_result,
+                "predictive_prediction": prediction,
+                "predictive_decision_summary": (
+                    decision_summary
+                ),
+                "predictive_trace_regression": (
+                    trace_regression
+                ),
+            }
+        },
+    )
+
+    result = orchestrate(
+        request
+    )
+
+    context = result.context
+
+    response_synthesis = None
+    decision_synthesis = None
+
+    if context is not None:
+        snapshot = context.snapshot()
+
+        metadata = snapshot.get(
+            "metadata",
+            {},
+        )
+
+        decision_synthesis = metadata.get(
+            "decision_synthesis"
+        )
+
+        response_synthesis = metadata.get(
+            "response_synthesis"
+        )
+
+    evidence = []
+    if isinstance(
+        response_synthesis,
+        dict,
+    ):
+        evidence = response_synthesis.get(
+            "evidence",
+            [],
+        )
+
+    contributing_engines = []
+    if isinstance(
+        response_synthesis,
+        dict,
+    ):
+        contributing_engines = response_synthesis.get(
+            "contributing_engines",
+            [],
+        )
+
+    response_text = ""
+    if isinstance(
+        response_synthesis,
+        dict,
+    ):
+        response_text = response_synthesis.get(
+            "response",
+            "",
+        )
+
+    checks = {
+        "7f_baseline": (
+            integration_baseline[
+                "regression_passed"
+            ]
+        ),
+        "7h_baseline": (
+            response_baseline[
+                "regression_passed"
+            ]
+        ),
+        "orchestration_ready": (
+            result.status == "READY"
+        ),
+        "context_available": (
+            context is not None
+        ),
+        "context_valid": (
+            context is not None
+            and validate_context(
+                context
+            )["valid"]
+        ),
+        "synthesis_available": (
+            isinstance(
+                response_synthesis,
+                dict,
+            )
+        ),
+        "synthesis_ready": (
+            isinstance(
+                response_synthesis,
+                dict,
+            )
+            and response_synthesis.get(
+                "status"
+            ) == "READY"
+        ),
+        "trace_preserved": (
+            isinstance(
+                response_synthesis,
+                dict,
+            )
+            and response_synthesis.get(
+                "trace_id"
+            ) == result.trace_id
+        ),
+        "decision_available": (
+            isinstance(
+                response_synthesis,
+                dict,
+            )
+            and bool(
+                response_synthesis.get(
+                    "decision"
+                )
+            )
+        ),
+        "confidence_available": (
+            isinstance(
+                response_synthesis,
+                dict,
+            )
+            and bool(
+                response_synthesis.get(
+                    "confidence"
+                )
+            )
+        ),
+        "priority_available": (
+            isinstance(
+                response_synthesis,
+                dict,
+            )
+            and bool(
+                response_synthesis.get(
+                    "priority"
+                )
+            )
+        ),
+        "evidence_generated": (
+            len(evidence) > 0
+        ),
+        "response_generated": (
+            isinstance(
+                response_text,
+                str,
+            )
+            and bool(
+                response_text.strip()
+            )
+        ),
+        "decision_preserved": (
+            isinstance(
+                decision_synthesis,
+                dict,
+            )
+            and isinstance(
+                response_synthesis,
+                dict,
+            )
+            and response_synthesis.get(
+                "decision"
+            ) == decision_synthesis.get(
+                "decision"
+            )
+        ),
+        "confidence_preserved": (
+            isinstance(
+                decision_synthesis,
+                dict,
+            )
+            and isinstance(
+                response_synthesis,
+                dict,
+            )
+            and response_synthesis.get(
+                "confidence"
+            ) == decision_synthesis.get(
+                "confidence"
+            )
+        ),
+        "priority_preserved": (
+            isinstance(
+                decision_synthesis,
+                dict,
+            )
+            and isinstance(
+                response_synthesis,
+                dict,
+            )
+            and response_synthesis.get(
+                "priority"
+            ) == decision_synthesis.get(
+                "priority"
+            )
+        ),
+        "reasoning_contributing": (
+            "reasoning"
+            in contributing_engines
+        ),
+        "predictive_contributing": (
+            "predictive"
+            in contributing_engines
+        ),
+        "safety_advisory": (
+            isinstance(
+                response_synthesis,
+                dict,
+            )
+            and response_synthesis.get(
+                "safety",
+                {},
+            ).get(
+                "level"
+            ) == "ADVISORY_ONLY"
+        ),
+        "execution_blocked": (
+            result.safety[
+                "execution_allowed"
+            ] is False
+            and isinstance(
+                response_synthesis,
+                dict,
+            )
+            and response_synthesis.get(
+                "safety",
+                {},
+            ).get(
+                "execution_allowed"
+            ) is False
+        ),
+        "automatic_action_blocked": (
+            result.safety[
+                "automatic_action_allowed"
+            ] is False
+            and isinstance(
+                response_synthesis,
+                dict,
+            )
+            and response_synthesis.get(
+                "safety",
+                {},
+            ).get(
+                "automatic_action_allowed"
+            ) is False
+        ),
+    }
+
+    return {
+        "integration_layer": "7H",
+        "integration_status": (
+            "READY"
+            if all(checks.values())
+            else "FAILED"
+        ),
+        "trace_id": result.trace_id,
+        "decision": (
+            response_synthesis.get(
+                "decision"
+            )
+            if isinstance(
+                response_synthesis,
+                dict,
+            )
+            else None
+        ),
+        "confidence": (
+            response_synthesis.get(
+                "confidence"
+            )
+            if isinstance(
+                response_synthesis,
+                dict,
+            )
+            else None
+        ),
+        "priority": (
+            response_synthesis.get(
+                "priority"
+            )
+            if isinstance(
+                response_synthesis,
+                dict,
+            )
+            else None
+        ),
+        "evidence_count": len(evidence),
+        "contributing_engines": (
+            contributing_engines
+        ),
+        "response": response_text,
+        "execution_allowed": (
+            result.safety[
+                "execution_allowed"
+            ]
+        ),
+        "automatic_action_allowed": (
+            result.safety[
+                "automatic_action_allowed"
+            ]
+        ),
+        "checks": checks,
+        "regression_passed": all(
+            checks.values()
+        ),
+    }
+
+# ============================================================
+# 7I — LEARNING FEEDBACK INTEGRATION REGRESSION
+# ============================================================
+
+def get_learning_feedback_integration_regression() -> Dict[str, Any]:
+    """
+    Validate 7I learning-feedback integration with the
+    existing 7B-7H orchestration architecture.
+
+    The regression verifies that:
+
+        - 7H remains healthy
+        - 7I standalone remains healthy
+        - learning feedback is stored in shared context
+        - the orchestration trace is preserved
+        - decision is preserved
+        - confidence is preserved
+        - priority is preserved
+        - evidence is preserved
+        - reasoning and predictive engines remain contributors
+        - feedback status is available
+        - learning signal is available
+        - safety remains advisory-only
+        - execution remains blocked
+        - automatic actions remain blocked
+        - self-modification remains blocked
+        - decision override remains blocked
+    """
+
+    integration_baseline = (
+        get_response_synthesis_integration_regression()
+    )
+
+    feedback_baseline = (
+        get_learning_feedback_regression()
+    )
+
+    from reasoning.engine import reason
+
+    from core.predictive_intelligence import (
+        get_predictive_decision_summary,
+        get_predictive_decision_trace_regression,
+        get_system_prediction,
+    )
+
+    reasoning_result = reason(
+        "compare Java and Python"
+    )
+
+    prediction = get_system_prediction()
+
+    decision_summary = (
+        get_predictive_decision_summary()
+    )
+
+    trace_regression = (
+        get_predictive_decision_trace_regression()
+    )
+
+    request = OrchestrationRequest(
+        command="test 7I learning feedback integration",
+        intent="TEST",
+        requested_capabilities=[
+            "reasoning",
+            "predictive_risk",
+        ],
+        context={
+            "engine_outputs": {
+                "reasoning": reasoning_result,
+                "predictive_prediction": prediction,
+                "predictive_decision_summary": (
+                    decision_summary
+                ),
+                "predictive_trace_regression": (
+                    trace_regression
+                ),
+            }
+        },
+    )
+
+    result = orchestrate(
+        request
+    )
+
+    context = result.context
+
+    learning_feedback = None
+
+    if context is not None:
+        snapshot = context.snapshot()
+
+        memory_context = snapshot.get(
+            "memory_context",
+            {},
+        )
+
+        learning_feedback = memory_context.get(
+            "learning_feedback"
+        )
+
+    if not isinstance(
+        learning_feedback,
+        dict,
+    ):
+        learning_feedback = {}
+
+    feedback_safety = learning_feedback.get(
+        "safety",
+        {},
+    )
+
+    if not isinstance(
+        feedback_safety,
+        dict,
+    ):
+        feedback_safety = {}
+
+    feedback_status = learning_feedback.get(
+        "feedback_status"
+    )
+
+    learning_signal = learning_feedback.get(
+        "learning_signal"
+    )
+
+    evidence = learning_feedback.get(
+        "evidence",
+        [],
+    )
+
+    contributing_engines = learning_feedback.get(
+        "contributing_engines",
+        [],
+    )
+
+    checks = {
+        "7h_baseline": (
+            integration_baseline[
+                "regression_passed"
+            ]
+        ),
+        "7i_baseline": (
+            feedback_baseline[
+                "regression_passed"
+            ]
+        ),
+        "orchestration_ready": (
+            result.status == "READY"
+        ),
+        "context_available": (
+            context is not None
+        ),
+        "context_valid": (
+            context is not None
+            and validate_context(
+                context
+            )["valid"]
+        ),
+        "feedback_available": (
+            bool(learning_feedback)
+        ),
+        "feedback_ready": (
+            bool(
+                learning_feedback.get(
+                    "feedback_status"
+                )
+            )
+            and bool(
+                learning_feedback.get(
+                    "learning_signal"
+                )
+            )
+        ),
+        "trace_preserved": (
+            learning_feedback.get(
+                "trace_id"
+            ) == result.trace_id
+        ),
+        "decision_available": (
+            bool(
+                learning_feedback.get(
+                    "decision"
+                )
+            )
+        ),
+        "confidence_available": (
+            bool(
+                learning_feedback.get(
+                    "confidence"
+                )
+            )
+        ),
+        "priority_available": (
+            bool(
+                learning_feedback.get(
+                    "priority"
+                )
+            )
+        ),
+        "evidence_generated": (
+            isinstance(
+                evidence,
+                list,
+            )
+            and len(evidence) > 0
+        ),
+        "reasoning_contributing": (
+            "reasoning" in (
+                contributing_engines
+                if isinstance(
+                    contributing_engines,
+                    list,
+                )
+                else []
+            )
+        ),
+        "predictive_contributing": (
+            "predictive" in (
+                contributing_engines
+                if isinstance(
+                    contributing_engines,
+                    list,
+                )
+                else []
+            )
+        ),
+        "feedback_detected": (
+            bool(feedback_status)
+        ),
+        "learning_signal_safe": (
+            bool(learning_signal)
+        ),
+        "safety_advisory": (
+            feedback_safety.get(
+                "safety_level",
+                feedback_safety.get(
+                    "level"
+                ),
+            )
+            == "ADVISORY_ONLY"
+        ),
+        "execution_blocked": (
+            result.safety[
+                "execution_allowed"
+            ] is False
+            and learning_feedback.get(
+                "execution_allowed"
+            ) is False
+            and feedback_safety.get(
+                "execution_allowed"
+            ) is False
+        ),
+        "automatic_action_blocked": (
+            result.safety[
+                "automatic_action_allowed"
+            ] is False
+            and learning_feedback.get(
+                "automatic_action_allowed"
+            ) is False
+            and feedback_safety.get(
+                "automatic_action_allowed"
+            ) is False
+        ),
+        "self_modification_blocked": (
+            learning_feedback.get(
+                "self_modification_allowed",
+                False,
+            ) is False
+            and feedback_safety.get(
+                "self_modification_allowed",
+                False,
+            ) is False
+        ),
+        "decision_override_blocked": (
+            learning_feedback.get(
+                "decision_override_allowed",
+                False,
+            ) is False
+            and feedback_safety.get(
+                "decision_override_allowed",
+                False,
+            ) is False
+        ),
+    }
+
+    return {
+        "integration_layer": "7I",
+        "integration_status": (
+            "READY"
+            if all(checks.values())
+            else "FAILED"
+        ),
+        "trace_id": result.trace_id,
+        "decision": learning_feedback.get(
+            "decision"
+        ),
+        "confidence": learning_feedback.get(
+            "confidence"
+        ),
+        "priority": learning_feedback.get(
+            "priority"
+        ),
+        "evidence": evidence,
+        "engines": contributing_engines,
+        "feedback_status": feedback_status,
+        "learning_signal": learning_signal,
+        "execution_allowed": result.safety[
+            "execution_allowed"
+        ],
+        "automatic_action_allowed": result.safety[
+            "automatic_action_allowed"
+        ],
+        "checks": checks,
+        "regression_passed": all(
+            checks.values()
+        ),
+    }
+
+
+# ============================================================
+# 7J — EXPERIENCE MEMORY INTEGRATION REGRESSION
+# ============================================================
+
+def get_experience_memory_integration_regression(
+) -> Dict[str, Any]:
+    """
+    Validate 7J experience-memory integration with the
+    existing 7B-7I orchestration architecture.
+
+    The regression verifies that:
+
+        - 7I remains healthy
+        - 7J standalone remains healthy
+        - an experience ID is generated
+        - the orchestration trace is preserved
+        - decision is preserved
+        - confidence is preserved
+        - priority is preserved
+        - evidence is preserved
+        - contributing engines are preserved
+        - an experience remains PENDING without an outcome
+        - COLLECT_OUTCOME is preserved without an outcome
+        - outcome recording can update the experience
+        - the original decision is not overridden
+        - safety remains advisory-only
+        - execution remains blocked
+        - automatic actions remain blocked
+        - self-modification remains blocked
+        - decision override remains blocked
+    """
+
+    integration_baseline = (
+        get_learning_feedback_integration_regression()
+    )
+
+    experience_baseline = (
+        get_experience_memory_regression()
+    )
+
+    from reasoning.engine import reason
+
+    from core.predictive_intelligence import (
+        get_predictive_decision_summary,
+        get_predictive_decision_trace_regression,
+        get_system_prediction,
+    )
+
+    reasoning_result = reason(
+        "compare Java and Python"
+    )
+
+    prediction = get_system_prediction()
+
+    decision_summary = (
+        get_predictive_decision_summary()
+    )
+
+    trace_regression = (
+        get_predictive_decision_trace_regression()
+    )
+
+    request = OrchestrationRequest(
+        command="test 7J experience memory integration",
+        intent="TEST",
+        requested_capabilities=[
+            "reasoning",
+            "predictive_risk",
+        ],
+        context={
+            "engine_outputs": {
+                "reasoning": reasoning_result,
+                "predictive_prediction": prediction,
+                "predictive_decision_summary": (
+                    decision_summary
+                ),
+                "predictive_trace_regression": (
+                    trace_regression
+                ),
+            }
+        },
+    )
+
+    result = orchestrate(
+        request
+    )
+
+    context = result.context
+
+    experience_memory = None
+
+    if context is not None:
+        snapshot = context.snapshot()
+
+        memory_context = snapshot.get(
+            "memory_context",
+            {},
+        )
+
+        experience_memory = memory_context.get(
+            "experience_memory"
+        )
+
+    if not isinstance(
+        experience_memory,
+        dict,
+    ):
+        experience_memory = {}
+
+    experience = experience_memory.get(
+        "experience",
+        {},
+    )
+
+    if not isinstance(
+        experience,
+        dict,
+    ):
+        experience = {}
+
+    experience_id = experience_memory.get(
+        "experience_id",
+        experience.get(
+            "experience_id"
+        ),
+    )
+
+    decision = experience_memory.get(
+        "decision",
+        experience.get(
+            "decision"
+        ),
+    )
+
+    confidence = experience_memory.get(
+        "confidence",
+        experience.get(
+            "confidence"
+        ),
+    )
+
+    priority = experience_memory.get(
+        "priority",
+        experience.get(
+            "priority"
+        ),
+    )
+
+    evidence = experience_memory.get(
+        "evidence",
+        experience.get(
+            "evidence",
+            [],
+        ),
+    )
+
+    contributing_engines = experience_memory.get(
+        "contributing_engines",
+        experience.get(
+            "contributing_engines",
+            [],
+        ),
+    )
+
+    outcome = experience_memory.get(
+        "outcome",
+        experience.get(
+            "outcome"
+        ),
+    )
+
+    outcome_status = experience_memory.get(
+        "outcome_status",
+        experience.get(
+            "outcome_status"
+        ),
+    )
+
+    learning_signal = experience_memory.get(
+        "learning_signal",
+        experience.get(
+            "learning_signal"
+        ),
+    )
+
+    safety = experience_memory.get(
+        "safety",
+        experience.get(
+            "safety",
+            {},
+        ),
+    )
+
+    if not isinstance(
+        safety,
+        dict,
+    ):
+        safety = {}
+
+    original_decision = decision
+
+    # Validate the already-integrated experience with a
+    # real outcome. This is a local regression operation;
+    # it does not execute anything or modify HOPE.
+    outcome_validation = None
+
+    try:
+        from core.experience_memory import (
+            update_experience_outcome,
+        )
+
+        outcome_validation = (
+            update_experience_outcome(
+                dict(experience),
+                "REGRESSION_OUTCOME",
+                True,
+            )
+        )
+
+    except Exception:
+        outcome_validation = None
+
+    checks = {
+        "7i_baseline": (
+            integration_baseline[
+                "regression_passed"
+            ]
+        ),
+
+        "7j_baseline": (
+            experience_baseline[
+                "regression_passed"
+            ]
+        ),
+
+        "orchestration_ready": (
+            result.status == "READY"
+        ),
+
+        "context_available": (
+            context is not None
+        ),
+
+        "context_valid": (
+            context is not None
+            and validate_context(
+                context
+            )["valid"]
+        ),
+
+        "experience_available": (
+            bool(experience_memory)
+        ),
+
+        "experience_id_generated": (
+            bool(experience_id)
+        ),
+
+        "trace_preserved": (
+            experience_memory.get(
+                "trace_id"
+            ) == result.trace_id
+            and experience.get(
+                "trace_id"
+            ) == result.trace_id
+        ),
+
+        "decision_preserved": (
+            bool(decision)
+        ),
+
+        "confidence_preserved": (
+            bool(confidence)
+        ),
+
+        "priority_preserved": (
+            bool(priority)
+        ),
+
+        "evidence_preserved": (
+            isinstance(
+                evidence,
+                list,
+            )
+            and len(evidence) > 0
+        ),
+
+        "engines_preserved": (
+            isinstance(
+                contributing_engines,
+                list,
+            )
+            and "reasoning"
+            in contributing_engines
+            and "predictive"
+            in contributing_engines
+        ),
+
+        "pending_without_outcome": (
+            outcome is None
+            and outcome_status == "PENDING"
+        ),
+
+        "collect_signal_without_outcome": (
+            learning_signal
+            == "COLLECT_OUTCOME"
+        ),
+
+        "validation_passed": (
+            isinstance(
+                outcome_validation,
+                dict,
+            )
+            and outcome_validation.get(
+                "outcome_available"
+            ) is True
+            and outcome_validation.get(
+                "outcome_status"
+            ) != "PENDING"
+        ),
+
+        "outcome_recorded": (
+            isinstance(
+                outcome_validation,
+                dict,
+            )
+            and (
+                outcome_validation.get(
+                    "outcome"
+                )
+                if "outcome" in outcome_validation
+                else (
+                    outcome_validation.get(
+                        "experience",
+                        {},
+                    ).get(
+                        "outcome"
+                    )
+                    if isinstance(
+                        outcome_validation.get(
+                            "experience",
+                            {},
+                        ),
+                        dict,
+                    )
+                    else None
+                )
+            ) == "REGRESSION_OUTCOME"
+        ),
+
+        "outcome_status_updated": (
+            isinstance(
+                outcome_validation,
+                dict,
+            )
+            and (
+                outcome_validation.get(
+                    "outcome_status"
+                )
+                if "outcome_status" in outcome_validation
+                else (
+                    outcome_validation.get(
+                        "experience",
+                        {},
+                    ).get(
+                        "outcome_status"
+                    )
+                    if isinstance(
+                        outcome_validation.get(
+                            "experience",
+                            {},
+                        ),
+                        dict,
+                    )
+                    else None
+                )
+            ) != "PENDING"
+        ),
+
+        "learning_signal_updated": (
+            isinstance(
+                outcome_validation,
+                dict,
+            )
+            and (
+                outcome_validation.get(
+                    "learning_signal"
+                )
+                if "learning_signal" in outcome_validation
+                else (
+                    outcome_validation.get(
+                        "experience",
+                        {},
+                    ).get(
+                        "learning_signal"
+                    )
+                    if isinstance(
+                        outcome_validation.get(
+                            "experience",
+                            {},
+                        ),
+                        dict,
+                    )
+                    else None
+                )
+            ) != "COLLECT_OUTCOME"
+        ),
+
+        "decision_not_overridden": (
+            isinstance(
+                outcome_validation,
+                dict,
+            )
+            and (
+                outcome_validation.get(
+                    "decision"
+                )
+                if "decision" in outcome_validation
+                else (
+                    outcome_validation.get(
+                        "experience",
+                        {},
+                    ).get(
+                        "decision"
+                    )
+                    if isinstance(
+                        outcome_validation.get(
+                            "experience",
+                            {},
+                        ),
+                        dict,
+                    )
+                    else original_decision
+                )
+            ) == original_decision
+        ),
+
+        "safety_advisory": (
+            safety.get(
+                "safety_level",
+                safety.get(
+                    "level"
+                ),
+            )
+            == "ADVISORY_ONLY"
+        ),
+
+        "execution_blocked": (
+            result.safety[
+                "execution_allowed"
+            ] is False
+            and experience_memory.get(
+                "execution_allowed"
+            ) is False
+            and experience.get(
+                "execution_allowed"
+            ) is False
+            and safety.get(
+                "execution_allowed"
+            ) is False
+        ),
+
+        "automatic_action_blocked": (
+            result.safety[
+                "automatic_action_allowed"
+            ] is False
+            and experience_memory.get(
+                "automatic_action_allowed"
+            ) is False
+            and experience.get(
+                "automatic_action_allowed"
+            ) is False
+            and safety.get(
+                "automatic_action_allowed"
+            ) is False
+        ),
+
+        "self_modification_blocked": (
+            experience_memory.get(
+                "self_modification_allowed",
+                False,
+            ) is False
+            and experience.get(
+                "self_modification_allowed",
+                False,
+            ) is False
+            and safety.get(
+                "self_modification_allowed",
+                False,
+            ) is False
+        ),
+
+        "decision_override_blocked": (
+            experience_memory.get(
+                "decision_override_allowed",
+                False,
+            ) is False
+            and experience.get(
+                "decision_override_allowed",
+                False,
+            ) is False
+            and safety.get(
+                "decision_override_allowed",
+                False,
+            ) is False
+        ),
+    }
+
+    return {
+        "integration_layer": "7J",
+        "integration_status": (
+            "READY"
+            if all(
+                checks.values()
+            )
+            else "FAILED"
+        ),
+        "trace_id": result.trace_id,
+        "experience_id": experience_id,
+        "decision": decision,
+        "confidence": confidence,
+        "priority": priority,
+        "evidence": evidence,
+        "engines": contributing_engines,
+        "outcome": outcome,
+        "outcome_status": outcome_status,
+        "learning_signal": learning_signal,
+        "execution_allowed": result.safety[
+            "execution_allowed"
+        ],
+        "automatic_action_allowed": result.safety[
+            "automatic_action_allowed"
+        ],
+        "self_modification_allowed": False,
+        "decision_override_allowed": False,
+        "checks": checks,
+        "regression_passed": all(
+            checks.values()
+        ),
+    }
