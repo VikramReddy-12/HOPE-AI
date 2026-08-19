@@ -2,7 +2,7 @@
 HOPE Intelligence Orchestrator
 
 v1.5 - Intelligence Orchestration
-7B - Engine Registration & Capability Discovery
+7E - Cross-Engine Intelligence Integration
 
 Purpose:
     Provide a safe orchestration registry for HOPE's intelligence
@@ -32,15 +32,19 @@ from core.orchestration_context import (
     validate_context,
 )
 
+from core.cross_engine_intelligence import (
+    get_cross_engine_regression,
+)
+
 
 # ============================================================
 # VERSION / LAYER
 # ============================================================
 
-ORCHESTRATOR_VERSION = "7D"
+ORCHESTRATOR_VERSION = "7E"
 ORCHESTRATOR_STATUS = "READY"
 
-TRACE_PREFIX = "7D"
+TRACE_PREFIX = "7E"
 
 
 # ============================================================
@@ -823,11 +827,16 @@ def orchestrate(
     """
     Execute the v1.5 orchestration foundation.
 
-    7B performs registry-driven engine discovery and
-    orchestration planning only.
+    7E extends 7D with cross-engine intelligence integration.
 
-    Actual engine execution will be introduced in later
-    orchestration milestones.
+    The orchestrator:
+        - discovers engines through the canonical registry,
+        - creates a shared orchestration context,
+        - records the deterministic cross-engine handoff plan,
+        - preserves traceability across the handoff,
+        - remains routing/context-only.
+
+    It does not execute engines or authorize automatic actions.
     """
 
     trace_id = _generate_trace_id()
@@ -932,21 +941,57 @@ def orchestrate(
     )
     context.add_metadata(
         "orchestration_mode",
-        "PLANNING_ONLY",
+        "CROSS_ENGINE_CONTEXT",
+    )
+
+    # 7E deterministic cross-engine handoff plan.
+    # This is metadata only: it does not execute either engine.
+    selected_set = set(selected_engines)
+    cross_engine_handoff = {
+        "enabled": (
+            "reasoning" in selected_set
+            and "predictive" in selected_set
+        ),
+        "upstream": (
+            "reasoning"
+            if "reasoning" in selected_set
+            else None
+        ),
+        "downstream": (
+            "predictive"
+            if "predictive" in selected_set
+            else None
+        ),
+        "handoff_stage": (
+            "REASON -> PREDICT"
+            if (
+                "reasoning" in selected_set
+                and "predictive" in selected_set
+            )
+            else None
+        ),
+        "execution_allowed": False,
+        "automatic_action_allowed": False,
+    }
+
+    context.add_metadata(
+        "cross_engine_integration",
+        cross_engine_handoff,
     )
 
     context_validation = validate_context(context)
 
     result_payload = {
-        "mode": "CONTEXT_FOUNDATION",
+        "mode": "CROSS_ENGINE_CONTEXT",
         "execution": "PLANNING_ONLY",
         "message": (
-            "7D orchestration context is ready. "
-            "Routing and context propagation are available; "
+            "7E cross-engine orchestration context is ready. "
+            "Reasoning-to-predictive handoff metadata is available; "
             "engine execution remains disabled."
         ),
         "context_version": context.version,
         "context_valid": context_validation["valid"],
+        "cross_engine": cross_engine_handoff,
     }
 
     return OrchestrationResult(
@@ -1917,3 +1962,155 @@ def get_orchestration_context_regression() -> Dict[str, Any]:
             checks.values()
         ),
     }
+
+# ============================================================
+# 7E — CROSS-ENGINE INTELLIGENCE INTEGRATION REGRESSION
+# ============================================================
+
+def get_cross_engine_integration_regression() -> Dict[str, Any]:
+    """
+    Run the 7E cross-engine intelligence integration regression.
+
+    The regression verifies that:
+
+        - 7D shared-context orchestration remains healthy
+        - the existing cross-engine intelligence layer is healthy
+        - reasoning can be identified as the upstream engine
+        - predictive can be identified as the downstream engine
+        - the orchestrator selects both engines for the combined request
+        - the shared context preserves the same trace
+        - the deterministic REASON -> PREDICT handoff is represented
+        - execution remains blocked
+        - automatic actions remain blocked
+    """
+
+    context_baseline = get_orchestration_context_regression()
+    cross_engine_baseline = get_cross_engine_regression()
+
+    request = OrchestrationRequest(
+        command="test 7E cross-engine integration",
+        intent="TEST",
+        requested_capabilities=[
+            "reasoning",
+            "predictive_risk",
+        ],
+    )
+
+    result = orchestrate(request)
+    context = result.context
+
+    cross_engine_metadata = {}
+    if context is not None:
+        snapshot = context.snapshot()
+        metadata = snapshot.get("metadata", {})
+        cross_engine_metadata = metadata.get(
+            "cross_engine_integration",
+            {},
+        )
+
+    checks = {
+        "7d_baseline": (
+            context_baseline["regression_passed"]
+        ),
+        "cross_engine_baseline": (
+            cross_engine_baseline["regression_passed"]
+        ),
+        "cross_engine_ready": (
+            cross_engine_baseline["integration_status"]
+            == "READY"
+        ),
+        "upstream_reasoning": (
+            cross_engine_baseline.get("upstream")
+            == "reasoning"
+        ),
+        "downstream_predictive": (
+            cross_engine_baseline.get("downstream")
+            == "predictive"
+        ),
+        "dependency_found": (
+            cross_engine_baseline.get("dependency_count")
+            == 1
+        ),
+        "orchestration_ready": (
+            result.status == "READY"
+        ),
+        "reasoning_selected": (
+            "reasoning" in result.selected_engines
+        ),
+        "predictive_selected": (
+            "predictive" in result.selected_engines
+        ),
+        "trace_preserved": (
+            context is not None
+            and context.trace_id == result.trace_id
+        ),
+        "context_valid": (
+            context is not None
+            and validate_context(context)["valid"]
+        ),
+        "handoff_enabled": (
+            cross_engine_metadata.get("enabled") is True
+        ),
+        "handoff_upstream": (
+            cross_engine_metadata.get("upstream")
+            == "reasoning"
+        ),
+        "handoff_downstream": (
+            cross_engine_metadata.get("downstream")
+            == "predictive"
+        ),
+        "handoff_stage": (
+            cross_engine_metadata.get("handoff_stage")
+            == "REASON -> PREDICT"
+        ),
+        "execution_blocked": (
+            result.safety["execution_allowed"] is False
+            and cross_engine_metadata.get(
+                "execution_allowed"
+            ) is False
+        ),
+        "automatic_action_blocked": (
+            result.safety["automatic_action_allowed"] is False
+            and cross_engine_metadata.get(
+                "automatic_action_allowed"
+            ) is False
+        ),
+        "trace_available": bool(result.trace_id),
+    }
+
+    return {
+        "integration_layer": "7E",
+        "integration_status": (
+            "READY"
+            if all(checks.values())
+            else "FAILED"
+        ),
+        "trace_id": result.trace_id,
+        "context_version": (
+            context.version
+            if context is not None
+            else None
+        ),
+        "dependency_count": cross_engine_baseline.get(
+            "dependency_count",
+            0,
+        ),
+        "upstream": cross_engine_baseline.get(
+            "upstream"
+        ),
+        "downstream": cross_engine_baseline.get(
+            "downstream"
+        ),
+        "selected_engines": result.selected_engines,
+        "pipeline": result.pipeline,
+        "handoff": cross_engine_metadata,
+        "execution_allowed": result.safety[
+            "execution_allowed"
+        ],
+        "automatic_action_allowed": result.safety[
+            "automatic_action_allowed"
+        ],
+        "checks": checks,
+        "regression_passed": all(checks.values()),
+    }
+
