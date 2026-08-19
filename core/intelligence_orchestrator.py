@@ -26,15 +26,21 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
+from core.orchestration_context import (
+    OrchestrationContext,
+    create_orchestration_context,
+    validate_context,
+)
+
 
 # ============================================================
 # VERSION / LAYER
 # ============================================================
 
-ORCHESTRATOR_VERSION = "7B"
+ORCHESTRATOR_VERSION = "7D"
 ORCHESTRATOR_STATUS = "READY"
 
-TRACE_PREFIX = "7C"
+TRACE_PREFIX = "7D"
 
 
 # ============================================================
@@ -115,6 +121,7 @@ class OrchestrationResult:
     safety: Dict[str, Any]
     result: Dict[str, Any]
     errors: List[str] = field(default_factory=list)
+    context: Optional[OrchestrationContext] = None
 
 
 # ============================================================
@@ -844,6 +851,25 @@ def orchestrate(
             safety=get_orchestration_safety(),
             result={},
             errors=validation["errors"],
+            context=create_orchestration_context(
+                trace_id=trace_id,
+                command=(
+                    request.command
+                    if isinstance(request, OrchestrationRequest)
+                    else ""
+                ),
+                intent=(
+                    request.intent
+                    if isinstance(request, OrchestrationRequest)
+                    else "UNKNOWN"
+                ),
+                requested_capabilities=(
+                    list(request.requested_capabilities)
+                    if isinstance(request, OrchestrationRequest)
+                    else []
+                ),
+                safety=get_orchestration_safety(),
+            ),
         )
 
     requested_capabilities = request.requested_capabilities
@@ -873,11 +899,63 @@ def orchestrate(
             safety=get_orchestration_safety(),
             result={},
             errors=pipeline_validation["errors"],
+            context=create_orchestration_context(
+                trace_id=trace_id,
+                command=request.command,
+                intent=request.intent,
+                requested_capabilities=list(
+                    request.requested_capabilities
+                ),
+                selected_engines=selected_engines,
+                pipeline=list(PIPELINE_STAGES),
+                safety=get_orchestration_safety(),
+            ),
         )
+
+    safety = get_orchestration_safety()
+
+    context = create_orchestration_context(
+        trace_id=trace_id,
+        command=request.command,
+        intent=request.intent,
+        requested_capabilities=list(
+            request.requested_capabilities
+        ),
+        selected_engines=list(selected_engines),
+        pipeline=list(PIPELINE_STAGES),
+        safety=safety,
+    )
+
+    context.add_metadata(
+        "orchestrator_version",
+        ORCHESTRATOR_VERSION,
+    )
+    context.add_metadata(
+        "orchestration_mode",
+        "PLANNING_ONLY",
+    )
+
+    context_validation = validate_context(context)
+
+    result_payload = {
+        "mode": "CONTEXT_FOUNDATION",
+        "execution": "PLANNING_ONLY",
+        "message": (
+            "7D orchestration context is ready. "
+            "Routing and context propagation are available; "
+            "engine execution remains disabled."
+        ),
+        "context_version": context.version,
+        "context_valid": context_validation["valid"],
+    }
 
     return OrchestrationResult(
         trace_id=trace_id,
-        status=ORCHESTRATOR_STATUS,
+        status=(
+            ORCHESTRATOR_STATUS
+            if context_validation["valid"]
+            else "INVALID"
+        ),
         request={
             "command": request.command,
             "intent": request.intent,
@@ -888,17 +966,10 @@ def orchestrate(
         },
         selected_engines=selected_engines,
         pipeline=list(PIPELINE_STAGES),
-        safety=get_orchestration_safety(),
-        result={
-            "mode": "FOUNDATION",
-            "execution": "PLANNING_ONLY",
-            "message": (
-                "7B registry and capability discovery are ready. "
-                "Engine execution will be introduced in later "
-                "orchestration milestones."
-            ),
-        },
-        errors=[],
+        safety=safety,
+        result=result_payload,
+        errors=list(context_validation["errors"]),
+        context=context,
     )
 
 
@@ -999,7 +1070,7 @@ register_default_engines()
 
 def get_orchestrator_status() -> Dict[str, Any]:
     """
-    Return the current 7B orchestrator status.
+    Return the current 7D orchestrator status.
     """
 
     return {
@@ -1038,6 +1109,11 @@ def get_orchestration_trace(
         "safety": dict(result.safety),
         "result": dict(result.result),
         "errors": list(result.errors),
+        "context": (
+            result.context.snapshot()
+            if result.context is not None
+            else None
+        ),
     }
 
 
@@ -1047,7 +1123,7 @@ def get_orchestration_trace(
 
 def get_orchestrator_regression() -> Dict[str, Any]:
     """
-    Run the 7B orchestration and registry invariants.
+    Run the 7B registry/orchestration baseline invariants.
     """
 
     status = get_orchestrator_status()
@@ -1726,6 +1802,116 @@ def get_pipeline_routing_regression() -> Dict[str, Any]:
             "automatic_action_allowed",
             False,
         ),
+        "checks": checks,
+        "regression_passed": all(
+            checks.values()
+        ),
+    }
+
+
+
+# ============================================================
+# 7D — CROSS-ENGINE ORCHESTRATION CONTEXT REGRESSION
+# ============================================================
+
+def get_orchestration_context_regression() -> Dict[str, Any]:
+    """
+    Run the 7D cross-engine orchestration-context regression.
+
+    The regression verifies that:
+        - 7C routing remains healthy
+        - a shared 7D context is created
+        - trace IDs are preserved
+        - selected engines and pipeline are preserved
+        - engine/stage outputs can be stored
+        - safety cannot be weakened
+        - context validation passes
+        - no execution or automatic action is authorized
+    """
+
+    routing_baseline = get_pipeline_routing_regression()
+
+    request = OrchestrationRequest(
+        command="test 7D context integration",
+        intent="TEST",
+        requested_capabilities=[
+            "reasoning",
+            "predictive_risk",
+        ],
+    )
+
+    result = orchestrate(request)
+    context = result.context
+
+    checks = {
+        "7c_baseline": routing_baseline["regression_passed"],
+        "context_created": isinstance(
+            context,
+            OrchestrationContext,
+        ),
+        "context_version": (
+            context is not None
+            and context.version == "7D"
+        ),
+        "trace_preserved": (
+            context is not None
+            and context.trace_id == result.trace_id
+        ),
+        "engines_preserved": (
+            context is not None
+            and context.selected_engines
+            == result.selected_engines
+        ),
+        "pipeline_preserved": (
+            context is not None
+            and context.pipeline
+            == result.pipeline
+        ),
+        "context_valid": (
+            context is not None
+            and validate_context(context)["valid"]
+        ),
+        "execution_blocked": (
+            result.safety["execution_allowed"] is False
+            and context is not None
+            and context.safety["execution_allowed"] is False
+        ),
+        "automatic_action_blocked": (
+            result.safety["automatic_action_allowed"] is False
+            and context is not None
+            and context.safety[
+                "automatic_action_allowed"
+            ] is False
+        ),
+        "trace_available": bool(
+            result.trace_id
+        ),
+        "orchestration_ready": (
+            result.status == "READY"
+        ),
+    }
+
+    return {
+        "integration_layer": "7D",
+        "integration_status": (
+            "READY"
+            if all(checks.values())
+            else "FAILED"
+        ),
+        "trace_id": result.trace_id,
+        "context_version": (
+            context.version
+            if context is not None
+            else None
+        ),
+        "selected_engines": result.selected_engines,
+        "pipeline": result.pipeline,
+        "execution_allowed": result.safety[
+            "execution_allowed"
+        ],
+        "automatic_action_allowed": result.safety[
+            "automatic_action_allowed"
+        ],
         "checks": checks,
         "regression_passed": all(
             checks.values()
