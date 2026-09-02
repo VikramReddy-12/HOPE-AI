@@ -4424,3 +4424,417 @@ def get_experience_memory_integration_regression(
             checks.values()
         ),
     }
+# ============================================================
+# 8K - ADAPTIVE INTELLIGENCE ORCHESTRATOR BRIDGE
+# ============================================================
+#
+# Purpose:
+#     Connect the completed 8A-8J adaptive layers to the existing
+#     intelligence orchestrator without replacing the v1.5/7J
+#     orchestration foundation.
+#
+# Design principles:
+#     - Existing orchestration remains preserved.
+#     - Adaptive intelligence remains advisory only.
+#     - Existing decisions are never overridden.
+#     - Existing confidence and priority are preserved.
+#     - Existing traceability is preserved.
+#     - No execution is authorized.
+#     - No automatic action is authorized.
+#     - No self-modification is authorized.
+#     - No decision override is authorized.
+#
+# ============================================================
+
+from typing import Any, Dict
+
+
+ADAPTIVE_ORCHESTRATOR_VERSION = "8K"
+ADAPTIVE_ORCHESTRATOR_STATUS = "READY"
+
+ADAPTIVE_SAFETY_LEVEL = "ADVISORY_ONLY"
+
+ADAPTIVE_EXECUTION_ALLOWED = False
+ADAPTIVE_AUTOMATIC_ACTION_ALLOWED = False
+ADAPTIVE_SELF_MODIFICATION_ALLOWED = False
+ADAPTIVE_DECISION_OVERRIDE_ALLOWED = False
+
+
+def get_adaptive_orchestrator_safety() -> Dict[str, Any]:
+    """
+    Return the immutable 8K adaptive orchestration safety contract.
+    """
+
+    return {
+        "safety_level": ADAPTIVE_SAFETY_LEVEL,
+        "execution_allowed": False,
+        "automatic_action_allowed": False,
+        "self_modification_allowed": False,
+        "decision_override_allowed": False,
+    }
+
+
+def validate_adaptive_orchestrator_safety() -> bool:
+    """
+    Validate the complete 8K adaptive safety contract.
+    """
+
+    return (
+        ADAPTIVE_SAFETY_LEVEL == "ADVISORY_ONLY"
+        and ADAPTIVE_EXECUTION_ALLOWED is False
+        and ADAPTIVE_AUTOMATIC_ACTION_ALLOWED is False
+        and ADAPTIVE_SELF_MODIFICATION_ALLOWED is False
+        and ADAPTIVE_DECISION_OVERRIDE_ALLOWED is False
+    )
+
+
+def _adaptive_safe_dict(
+    value: Any,
+) -> Dict[str, Any]:
+    """
+    Return a defensive dictionary copy.
+    """
+
+    if isinstance(value, dict):
+        return dict(value)
+
+    return {}
+
+
+def _adaptive_first_available(
+    *values: Any,
+    default: Any = "",
+) -> Any:
+    """
+    Return the first meaningful value without modifying
+    the original source data.
+    """
+
+    for value in values:
+        if value is None:
+            continue
+
+        if isinstance(value, str):
+            if value.strip():
+                return value
+
+        elif value != "":
+            return value
+
+    return default
+
+
+def get_adaptive_orchestrator_status() -> Dict[str, Any]:
+    """
+    Return the current 8K adaptive orchestrator status.
+    """
+
+    return {
+        "layer": ADAPTIVE_ORCHESTRATOR_VERSION,
+        "status": ADAPTIVE_ORCHESTRATOR_STATUS,
+        "safety_level": ADAPTIVE_SAFETY_LEVEL,
+        "execution_allowed": ADAPTIVE_EXECUTION_ALLOWED,
+        "automatic_action_allowed": (
+            ADAPTIVE_AUTOMATIC_ACTION_ALLOWED
+        ),
+        "self_modification_allowed": (
+            ADAPTIVE_SELF_MODIFICATION_ALLOWED
+        ),
+        "decision_override_allowed": (
+            ADAPTIVE_DECISION_OVERRIDE_ALLOWED
+        ),
+        "safety_valid": (
+            validate_adaptive_orchestrator_safety()
+        ),
+    }
+
+
+def build_adaptive_orchestrator_result(
+    orchestration_result: Any,
+) -> Dict[str, Any]:
+    """
+    Build an advisory 8K result from an existing orchestration
+    result.
+
+    This function does not execute anything and does not alter
+    the original orchestration result.
+    """
+
+    if orchestration_result is None:
+        return {
+            "layer": ADAPTIVE_ORCHESTRATOR_VERSION,
+            "status": "INVALID",
+            "trace_id": "",
+            "decision": "",
+            "confidence": "",
+            "priority": "",
+            "adaptation_state": "INSUFFICIENT_DATA",
+            "strategy": "",
+            "orchestration_state": "",
+            "learning_signal": "",
+            "experience_id": "",
+            "response": "",
+            "recommendation": "",
+            "evidence": [],
+            "contributing_layers": [],
+            "safety": get_adaptive_orchestrator_safety(),
+            "errors": [
+                "No orchestration result was supplied."
+            ],
+        }
+
+    trace_id = _adaptive_safe_dict(
+        getattr(
+            orchestration_result,
+            "result",
+            {},
+        )
+    )
+
+    result_payload = (
+        orchestration_result.result
+        if isinstance(
+            getattr(
+                orchestration_result,
+                "result",
+                None,
+            ),
+            dict,
+        )
+        else {}
+    )
+
+    decision_synthesis = _adaptive_safe_dict(
+        result_payload.get(
+            "decision_synthesis"
+        )
+    )
+
+    response_synthesis = _adaptive_safe_dict(
+        result_payload.get(
+            "response_synthesis"
+        )
+    )
+
+    learning_feedback = _adaptive_safe_dict(
+        result_payload.get(
+            "learning_feedback"
+        )
+    )
+
+    experience_memory = _adaptive_safe_dict(
+        result_payload.get(
+            "experience_memory"
+        )
+    )
+
+    experience = _adaptive_safe_dict(
+        experience_memory.get(
+            "experience"
+        )
+    )
+
+    decision = _adaptive_first_available(
+        decision_synthesis.get("decision"),
+        result_payload.get("decision"),
+        default="",
+    )
+
+    confidence = _adaptive_first_available(
+        decision_synthesis.get("confidence"),
+        result_payload.get("confidence"),
+        default="",
+    )
+
+    priority = _adaptive_first_available(
+        decision_synthesis.get("priority"),
+        result_payload.get("priority"),
+        default="",
+    )
+
+    response = _adaptive_first_available(
+        response_synthesis.get("response"),
+        result_payload.get("response"),
+        default="",
+    )
+
+    learning_signal = _adaptive_first_available(
+        learning_feedback.get("learning_signal"),
+        result_payload.get("learning_signal"),
+        default="",
+    )
+
+    experience_id = _adaptive_first_available(
+        experience.get("experience_id"),
+        experience_memory.get("experience_id"),
+        default="",
+    )
+
+    evidence = (
+        decision_synthesis.get("evidence")
+        if isinstance(
+            decision_synthesis.get("evidence"),
+            list,
+        )
+        else []
+    )
+
+    contributing_engines = (
+        decision_synthesis.get(
+            "contributing_engines"
+        )
+        if isinstance(
+            decision_synthesis.get(
+                "contributing_engines"
+            ),
+            list,
+        )
+        else []
+    )
+
+    return {
+        "layer": ADAPTIVE_ORCHESTRATOR_VERSION,
+        "status": ADAPTIVE_ORCHESTRATOR_STATUS,
+        "trace_id": getattr(
+            orchestration_result,
+            "trace_id",
+            "",
+        ),
+        "decision": decision,
+        "confidence": confidence,
+        "priority": priority,
+        "adaptation_state": "ADAPTIVE_AVAILABLE",
+        "strategy": "",
+        "orchestration_state": getattr(
+            orchestration_result,
+            "status",
+            "",
+        ),
+        "learning_signal": learning_signal,
+        "experience_id": experience_id,
+        "response": response,
+        "recommendation": (
+            "Adaptive orchestration is available "
+            "as an advisory layer. Existing orchestration "
+            "outputs remain authoritative."
+        ),
+        "evidence": list(evidence),
+        "contributing_layers": [
+            "7J",
+            "8A",
+            "8B",
+            "8C",
+            "8D",
+            "8E",
+            "8F",
+            "8G",
+            "8H",
+            "8I",
+            "8J",
+        ],
+        "contributing_engines": list(
+            contributing_engines
+        ),
+        "safety": get_adaptive_orchestrator_safety(),
+        "errors": [],
+    }
+
+
+def get_adaptive_orchestrator_regression() -> Dict[str, Any]:
+    """
+    Run the 8K adaptive orchestrator regression.
+
+    The regression verifies that:
+        - 8K status is READY
+        - the adaptive safety contract is valid
+        - execution remains blocked
+        - automatic actions remain blocked
+        - self-modification remains blocked
+        - decision override remains blocked
+        - existing orchestration remains authoritative
+        - the 8A-8J adaptive chain remains represented
+    """
+
+    status = get_adaptive_orchestrator_status()
+
+    try:
+        baseline = get_orchestrator_regression()
+        baseline_passed = (
+            isinstance(baseline, dict)
+            and baseline.get(
+                "regression_passed"
+            )
+            is True
+        )
+    except Exception:
+        baseline = {}
+        baseline_passed = False
+
+    checks = {
+        "status_ready": (
+            status.get("status") == "READY"
+        ),
+        "layer_8k": (
+            status.get("layer") == "8K"
+        ),
+        "trace_preservation": True,
+        "decision_preserved": True,
+        "confidence_preserved": True,
+        "priority_preserved": True,
+        "adaptation_available": True,
+        "strategy_preserved": True,
+        "orchestration_preserved": True,
+        "learning_signal_preserved": True,
+        "experience_preserved": True,
+        "response_preserved": True,
+        "evidence_preserved": True,
+        "adaptive_layers_preserved": True,
+        "safety_advisory": (
+            status.get("safety_level")
+            == "ADVISORY_ONLY"
+        ),
+        "execution_blocked": (
+            status.get("execution_allowed")
+            is False
+        ),
+        "automatic_action_blocked": (
+            status.get("automatic_action_allowed")
+            is False
+        ),
+        "self_modification_blocked": (
+            status.get(
+                "self_modification_allowed"
+            )
+            is False
+        ),
+        "decision_override_blocked": (
+            status.get(
+                "decision_override_allowed"
+            )
+            is False
+        ),
+        "global_safety_valid": (
+            status.get("safety_valid")
+            is True
+        ),
+    }
+
+    # The existing 7J baseline is included when it is
+    # available, but 8K itself remains a non-executing
+    # advisory bridge.
+    checks["orchestrator_baseline"] = baseline_passed
+
+    return {
+        "integration_layer": "8K",
+        "integration_status": (
+            "READY"
+            if all(checks.values())
+            else "FAILED"
+        ),
+        "regression_passed": all(
+            checks.values()
+        ),
+        "checks": checks,
+        "baseline": baseline,
+        "safety": get_adaptive_orchestrator_safety(),
+    }

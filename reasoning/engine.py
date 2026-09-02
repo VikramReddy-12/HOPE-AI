@@ -1,4 +1,4 @@
-"""
+﻿"""
 HOPE Reasoning Engine
 
 Provides advanced reasoning capabilities including:
@@ -89,14 +89,14 @@ def compare_topics(topics):
     response.append(f"{topic1.title()}:")
 
     for item in data1.get("advantages", []):
-        response.append(f"  ✓ {item}")
+        response.append(f"  âœ“ {item}")
 
     response.append("")
 
     response.append(f"{topic2.title()}:")
 
     for item in data2.get("advantages", []):
-        response.append(f"  ✓ {item}")
+        response.append(f"  âœ“ {item}")
 
     response.append("")
 
@@ -109,14 +109,14 @@ def compare_topics(topics):
     response.append(f"{topic1.title()}:")
 
     for item in data1.get("disadvantages", []):
-        response.append(f"  ✗ {item}")
+        response.append(f"  âœ— {item}")
 
     response.append("")
 
     response.append(f"{topic2.title()}:")
 
     for item in data2.get("disadvantages", []):
-        response.append(f"  ✗ {item}")
+        response.append(f"  âœ— {item}")
 
     response.append("")
 
@@ -129,14 +129,14 @@ def compare_topics(topics):
     response.append(f"{topic1.title()}:")
 
     for item in data1.get("best_for", []):
-        response.append(f"  • {item}")
+        response.append(f"  â€¢ {item}")
 
     response.append("")
 
     response.append(f"{topic2.title()}:")
 
     for item in data2.get("best_for", []):
-        response.append(f"  • {item}")
+        response.append(f"  â€¢ {item}")
 
     return "\n".join(response)
 
@@ -165,13 +165,13 @@ def recommend(topic):
     response.append("Best For:")
 
     for item in data.get("best_for", []):
-        response.append(f"• {item}")
+        response.append(f"â€¢ {item}")
 
     response.append("")
     response.append("Advantages:")
 
     for item in data.get("advantages", []):
-        response.append(f"✓ {item}")
+        response.append(f"âœ“ {item}")
 
     return "\n".join(response)
 
@@ -224,7 +224,13 @@ def reason(command):
     Main reasoning function.
     """
 
-    command = command.lower().strip()
+    if command is None:
+        return None
+
+    command = str(command).lower().strip()
+
+    if not command:
+        return None
 
     # ---------------------------------
     # Detect Topics
@@ -246,7 +252,6 @@ def reason(command):
         )
         and len(topics) >= 2
     ):
-
         return compare_topics(topics)
 
     # ---------------------------------
@@ -259,7 +264,6 @@ def reason(command):
         or "better" in command
         or "best language" in command
     ):
-
         if topics:
             return recommend(topics[0])
 
@@ -270,10 +274,32 @@ def reason(command):
     resolved_command = resolve_references(command)
 
     if resolved_command is not None:
-        return search_knowledge(resolved_command)
+        result = search_knowledge(resolved_command)
+
+        if result is not None:
+            return result
 
     # ---------------------------------
-    # No reasoning required
+    # General Knowledge Reasoning
+    # ---------------------------------
+
+    result = search_knowledge(command)
+
+    if result is not None and result != "I don't know that yet.":
+        return result
+
+    # ---------------------------------
+    # Topic Fallback
+    # ---------------------------------
+
+    if topics:
+        result = search_knowledge(topics[0])
+
+        if result is not None:
+            return result
+
+    # ---------------------------------
+    # No reasoning result
     # ---------------------------------
 
     return None
