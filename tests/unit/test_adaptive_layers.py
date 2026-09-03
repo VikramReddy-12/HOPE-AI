@@ -1,4 +1,4 @@
-import unittest
+﻿import unittest
 
 from core.adaptive_intelligence import get_adaptive_intelligence_regression
 from core.adaptive_strategy import get_adaptive_strategy_regression
@@ -11,6 +11,7 @@ from core.adaptive_integration import get_adaptive_integration_regression
 from core.adaptive_validation import get_adaptive_validation_regression
 from core.adaptive_orchestrator import get_adaptive_orchestration_regression
 from core.adaptive_governance import get_adaptive_governance_regression
+from core.adaptive_oversight import get_adaptive_oversight_regression
 
 
 class TestAdaptiveLayers(unittest.TestCase):
@@ -59,10 +60,10 @@ class TestAdaptiveLayers(unittest.TestCase):
         result = get_adaptive_governance_regression()
         self.assertTrue(result["regression_passed"])
 
+    def test_8m(self):
+        result = get_adaptive_oversight_regression()
+        self.assertTrue(result["regression_passed"])
+
 
 if __name__ == "__main__":
     unittest.main()
-
-    def test_8l(self):
-        result = get_adaptive_governance_regression()
-        self.assertTrue(result["regression_passed"])
