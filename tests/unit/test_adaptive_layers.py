@@ -12,6 +12,7 @@ from core.adaptive_validation import get_adaptive_validation_regression
 from core.adaptive_orchestrator import get_adaptive_orchestration_regression
 from core.adaptive_governance import get_adaptive_governance_regression
 from core.adaptive_oversight import get_adaptive_oversight_regression
+from core.adaptive_accountability import get_adaptive_accountability_regression
 
 
 class TestAdaptiveLayers(unittest.TestCase):
@@ -64,6 +65,62 @@ class TestAdaptiveLayers(unittest.TestCase):
         result = get_adaptive_oversight_regression()
         self.assertTrue(result["regression_passed"])
 
+    def test_8n(self):
+        result = get_adaptive_accountability_regression()
+        self.assertTrue(result["regression_passed"])
+
+        self.assertEqual(result["integration_layer"], "8N")
+        self.assertEqual(result["integration_status"], "READY")
+
+        output = result["result"]
+
+        self.assertEqual(
+            output["accountability_layer"],
+            "8N",
+        )
+        self.assertEqual(
+            output["accountability_status"],
+            "READY",
+        )
+        self.assertEqual(
+            output["accountability_state"],
+            "ACCOUNTABILITY_ADVISORY",
+        )
+
+        self.assertEqual(
+            output["accountability"]["accountability_level"],
+            "ADVISORY_ONLY",
+        )
+        self.assertTrue(
+            output["accountability"]["human_review_required"]
+        )
+        self.assertTrue(
+            output["accountability"]["audit_available"]
+        )
+
+        self.assertFalse(output["execution_allowed"])
+        self.assertFalse(output["automatic_action_allowed"])
+        self.assertFalse(output["self_modification_allowed"])
+        self.assertFalse(output["decision_override_allowed"])
+
+        self.assertFalse(
+            output["accountability"]["execution_allowed"]
+        )
+        self.assertFalse(
+            output["accountability"]["automatic_action_allowed"]
+        )
+        self.assertFalse(
+            output["accountability"]["self_modification_allowed"]
+        )
+        self.assertFalse(
+            output["accountability"]["decision_override_allowed"]
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
+
+
+
+
+
