@@ -1,6 +1,84 @@
-# # 📘 CHANGELOG
+# 📘 CHANGELOG
 
 All notable changes to this project are documented here.
+
+---
+
+# v1.6 - Adaptive Intelligence & Accountability
+
+Release Date: September 2026
+
+## ✨ Added
+
+### Adaptive Intelligence Stack
+
+- Adaptive Intelligence Layer
+- Adaptive Strategy Selection
+- Adaptive Orchestration
+- Adaptive Decision Support
+- Adaptive Response Generation
+- Adaptive Learning Signals
+- Adaptive Experience Integration
+- Adaptive Layer Integration
+- Adaptive Safety Validation
+- Adaptive Regression Validation
+- Adaptive Orchestrator
+
+### Governance, Oversight & Accountability
+
+- 8L Adaptive Governance Layer
+- 8M Adaptive Oversight Layer
+- 8N Adaptive Accountability Layer
+- Adaptive Governance Regression Coverage
+- Adaptive Oversight Regression Coverage
+- Adaptive Accountability Regression Coverage
+- Human Review Enforcement
+- Audit Availability
+- Adaptive Safety Assurance
+
+## 🚀 Improved
+
+- Adaptive intelligence now preserves decision and reasoning context across successive layers.
+- Governance is applied before oversight and accountability.
+- Oversight provides an assurance boundary for governed adaptive results.
+- Accountability provides an audit boundary for governed and overseen adaptive results.
+- Adaptive layer regression coverage now validates the complete 8A–8N progression.
+
+## 🛡️ Safety
+
+- Human review remains authoritative.
+- Execution remains disabled.
+- Automatic action remains disabled.
+- Self-modification remains disabled.
+- Decision override remains disabled.
+- Adaptive outputs remain advisory only.
+- Governance, oversight, and accountability cannot authorize autonomous execution.
+
+## 🧪 Validation
+
+- Adaptive layer regression suite passes through 8N.
+- 8M → 8N accountability regression passes.
+- Full test suite passes.
+- Global safety validation remains active.
+- Accountability state and audit availability are validated.
+- Execution, automatic action, self-modification, and decision override remain blocked.
+
+## 🎯 Result
+
+HOPE can now:
+
+- Generate adaptive intelligence.
+- Select and preserve adaptive strategies.
+- Orchestrate adaptive decision processing.
+- Produce adaptive responses.
+- Generate learning signals.
+- Integrate adaptive experience.
+- Validate adaptive safety.
+- Govern adaptive results.
+- Provide oversight and assurance.
+- Record adaptive results through an accountability boundary.
+- Require human review before any action.
+- Preserve an advisory-only safety model throughout the adaptive stack.
 
 ---
 

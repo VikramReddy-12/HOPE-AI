@@ -17,8 +17,8 @@ FULL_NAME = "Helping Optimize Potential Everyday"
 # Version Information
 # ==========================================================
 
-VERSION = "v1.5"
-CODENAME = "Intelligence Orchestration"
+VERSION = "v1.6"
+CODENAME = "Adaptive Intelligence & Accountability"
 STATUS = "Stable"
 
 # ==========================================================
@@ -81,6 +81,9 @@ MODULES = [
     "Adaptive Safety",
     "Adaptive Validation",
     "Adaptive Intelligence Orchestrator",
+    "Adaptive Governance",
+    "Adaptive Oversight",
+    "Adaptive Accountability",
 ]
 
 # ==========================================================
@@ -123,6 +126,17 @@ FEATURES = [
     "Adaptive Safety Validation",
     "Adaptive Regression Validation",
     "Adaptive Orchestrator",
+
+    # ------------------------------------------------------
+    # Adaptive Governance & Accountability
+    # ------------------------------------------------------
+
+    "Adaptive Governance",
+    "Adaptive Oversight",
+    "Adaptive Accountability",
+    "Human Review Enforcement",
+    "Audit Availability",
+    "Adaptive Safety Assurance",
 ]
 
 # ==========================================================
