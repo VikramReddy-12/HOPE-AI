@@ -10,6 +10,7 @@ from core.adaptive_experience import get_adaptive_experience_regression
 from core.adaptive_integration import get_adaptive_integration_regression
 from core.adaptive_validation import get_adaptive_validation_regression
 from core.adaptive_orchestrator import get_adaptive_orchestration_regression
+from core.adaptive_governance import get_adaptive_governance_regression
 
 
 class TestAdaptiveLayers(unittest.TestCase):
@@ -54,6 +55,14 @@ class TestAdaptiveLayers(unittest.TestCase):
         result = get_adaptive_orchestration_regression()
         self.assertTrue(result["regression_passed"])
 
+    def test_8l(self):
+        result = get_adaptive_governance_regression()
+        self.assertTrue(result["regression_passed"])
+
 
 if __name__ == "__main__":
     unittest.main()
+
+    def test_8l(self):
+        result = get_adaptive_governance_regression()
+        self.assertTrue(result["regression_passed"])
