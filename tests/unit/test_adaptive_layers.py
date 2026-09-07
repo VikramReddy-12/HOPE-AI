@@ -1,5 +1,6 @@
 ﻿import unittest
 
+from core.capabilities import get_capability_regression
 from core.adaptive_intelligence import get_adaptive_intelligence_regression
 from core.adaptive_strategy import get_adaptive_strategy_regression
 from core.adaptive_orchestration import get_adaptive_orchestration_regression
@@ -16,6 +17,29 @@ from core.adaptive_accountability import get_adaptive_accountability_regression
 
 
 class TestAdaptiveLayers(unittest.TestCase):
+
+    def test_9a(self):
+        result = get_capability_regression()
+
+        self.assertTrue(result["regression_passed"])
+        self.assertEqual(result["integration_layer"], "9A")
+        self.assertEqual(result["integration_status"], "READY")
+        self.assertFalse(result["execution_enabled"])
+
+        capabilities = result["capabilities"]
+
+        self.assertIn("knowledge", capabilities)
+        self.assertIn("memory", capabilities)
+        self.assertIn("conversation", capabilities)
+        self.assertIn("reasoning", capabilities)
+        self.assertIn("goals", capabilities)
+        self.assertIn("planning", capabilities)
+        self.assertIn("adaptive_intelligence", capabilities)
+        self.assertIn("governance", capabilities)
+        self.assertIn("oversight", capabilities)
+        self.assertIn("accountability", capabilities)
+
+        self.assertNotIn("voice", capabilities)
 
     def test_8a(self):
         result = get_adaptive_intelligence_regression()
@@ -67,21 +91,15 @@ class TestAdaptiveLayers(unittest.TestCase):
 
     def test_8n(self):
         result = get_adaptive_accountability_regression()
-        self.assertTrue(result["regression_passed"])
 
+        self.assertTrue(result["regression_passed"])
         self.assertEqual(result["integration_layer"], "8N")
         self.assertEqual(result["integration_status"], "READY")
 
         output = result["result"]
 
-        self.assertEqual(
-            output["accountability_layer"],
-            "8N",
-        )
-        self.assertEqual(
-            output["accountability_status"],
-            "READY",
-        )
+        self.assertEqual(output["accountability_layer"], "8N")
+        self.assertEqual(output["accountability_status"], "READY")
         self.assertEqual(
             output["accountability_state"],
             "ACCOUNTABILITY_ADVISORY",
@@ -91,9 +109,11 @@ class TestAdaptiveLayers(unittest.TestCase):
             output["accountability"]["accountability_level"],
             "ADVISORY_ONLY",
         )
+
         self.assertTrue(
             output["accountability"]["human_review_required"]
         )
+
         self.assertTrue(
             output["accountability"]["audit_available"]
         )
@@ -106,12 +126,15 @@ class TestAdaptiveLayers(unittest.TestCase):
         self.assertFalse(
             output["accountability"]["execution_allowed"]
         )
+
         self.assertFalse(
             output["accountability"]["automatic_action_allowed"]
         )
+
         self.assertFalse(
             output["accountability"]["self_modification_allowed"]
         )
+
         self.assertFalse(
             output["accountability"]["decision_override_allowed"]
         )
@@ -119,8 +142,3 @@ class TestAdaptiveLayers(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
-
-
-
-
