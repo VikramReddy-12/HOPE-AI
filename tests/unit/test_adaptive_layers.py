@@ -1,6 +1,8 @@
 ﻿import unittest
 
 from core.capabilities import get_capability_regression
+from core.capability_discovery import get_capability_discovery_regression
+
 from core.adaptive_intelligence import get_adaptive_intelligence_regression
 from core.adaptive_strategy import get_adaptive_strategy_regression
 from core.adaptive_orchestration import get_adaptive_orchestration_regression
@@ -40,6 +42,49 @@ class TestAdaptiveLayers(unittest.TestCase):
         self.assertIn("accountability", capabilities)
 
         self.assertNotIn("voice", capabilities)
+
+    def test_9b(self):
+        result = get_capability_discovery_regression()
+
+        self.assertTrue(result["regression_passed"])
+        self.assertEqual(result["integration_layer"], "9B")
+        self.assertEqual(result["integration_status"], "READY")
+        self.assertFalse(result["execution_enabled"])
+
+        checks = result["checks"]
+
+        self.assertTrue(checks["memory_discovered"])
+        self.assertTrue(checks["knowledge_discovered"])
+        self.assertTrue(checks["planning_discovered"])
+        self.assertTrue(checks["unknown_not_invented"])
+        self.assertTrue(checks["execution_disabled"])
+        self.assertTrue(checks["tool_selection_disabled"])
+        self.assertTrue(checks["permission_disabled"])
+
+        memory_result = result["memory_result"]
+        knowledge_result = result["knowledge_result"]
+        planning_result = result["planning_result"]
+        unknown_result = result["unknown_result"]
+
+        self.assertEqual(
+            memory_result["discovered_capabilities"],
+            ["memory"],
+        )
+
+        self.assertEqual(
+            knowledge_result["discovered_capabilities"],
+            ["knowledge"],
+        )
+
+        self.assertEqual(
+            planning_result["discovered_capabilities"],
+            ["planning"],
+        )
+
+        self.assertEqual(
+            unknown_result["discovered_capabilities"],
+            [],
+        )
 
     def test_8a(self):
         result = get_adaptive_intelligence_regression()
