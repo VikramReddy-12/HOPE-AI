@@ -2,6 +2,13 @@
 
 from core.capabilities import get_capability_regression
 from core.capability_discovery import get_capability_discovery_regression
+from core.tool_architecture import get_tool_architecture_regression
+from core.tool_selection import get_tool_selection_regression
+from core.action_policy import get_action_policy_regression
+from core.controlled_execution import get_controlled_execution_regression
+from core.action_results import get_action_results_regression
+from core.action_audit import get_action_audit_regression
+from core.capability_integration import get_capability_integration_regression
 
 from core.adaptive_intelligence import get_adaptive_intelligence_regression
 from core.adaptive_strategy import get_adaptive_strategy_regression
@@ -51,39 +58,344 @@ class TestAdaptiveLayers(unittest.TestCase):
         self.assertEqual(result["integration_status"], "READY")
         self.assertFalse(result["execution_enabled"])
 
-        checks = result["checks"]
-
-        self.assertTrue(checks["memory_discovered"])
-        self.assertTrue(checks["knowledge_discovered"])
-        self.assertTrue(checks["planning_discovered"])
-        self.assertTrue(checks["unknown_not_invented"])
-        self.assertTrue(checks["execution_disabled"])
-        self.assertTrue(checks["tool_selection_disabled"])
-        self.assertTrue(checks["permission_disabled"])
-
-        memory_result = result["memory_result"]
-        knowledge_result = result["knowledge_result"]
-        planning_result = result["planning_result"]
-        unknown_result = result["unknown_result"]
+        self.assertTrue(result["checks"]["memory_discovered"])
+        self.assertTrue(result["checks"]["knowledge_discovered"])
+        self.assertTrue(result["checks"]["planning_discovered"])
+        self.assertTrue(result["checks"]["unknown_not_invented"])
+        self.assertTrue(result["checks"]["execution_disabled"])
+        self.assertTrue(result["checks"]["tool_selection_disabled"])
+        self.assertTrue(result["checks"]["permission_disabled"])
 
         self.assertEqual(
-            memory_result["discovered_capabilities"],
+            result["memory_result"]["discovered_capabilities"],
             ["memory"],
         )
 
         self.assertEqual(
-            knowledge_result["discovered_capabilities"],
+            result["knowledge_result"]["discovered_capabilities"],
             ["knowledge"],
         )
 
         self.assertEqual(
-            planning_result["discovered_capabilities"],
+            result["planning_result"]["discovered_capabilities"],
             ["planning"],
         )
 
         self.assertEqual(
-            unknown_result["discovered_capabilities"],
+            result["unknown_result"]["discovered_capabilities"],
             [],
+        )
+
+    def test_9c(self):
+        result = get_tool_architecture_regression()
+
+        self.assertTrue(result["regression_passed"])
+        self.assertEqual(result["integration_layer"], "9C")
+        self.assertEqual(result["integration_status"], "READY")
+        self.assertFalse(result["execution_enabled"])
+
+        checks = result["checks"]
+
+        self.assertTrue(checks["tools_available"])
+        self.assertTrue(checks["knowledge_tool_registered"])
+        self.assertTrue(checks["memory_store_registered"])
+        self.assertTrue(checks["memory_recall_registered"])
+        self.assertTrue(checks["knowledge_capability_mapping"])
+        self.assertTrue(checks["memory_capability_mapping"])
+        self.assertTrue(checks["unknown_tool_blocked"])
+        self.assertTrue(checks["execution_disabled"])
+        self.assertTrue(checks["selection_disabled"])
+        self.assertTrue(checks["permission_disabled"])
+
+        tools = result["tools"]
+
+        self.assertIn("knowledge_lookup", tools)
+        self.assertIn("memory_store", tools)
+        self.assertIn("memory_recall", tools)
+
+        knowledge_tool = tools["knowledge_lookup"]
+
+        self.assertEqual(
+            knowledge_tool["capability"],
+            "knowledge",
+        )
+
+        self.assertFalse(
+            knowledge_tool["execution_enabled"]
+        )
+
+        memory_store = tools["memory_store"]
+
+        self.assertEqual(
+            memory_store["capability"],
+            "memory",
+        )
+
+        self.assertFalse(
+            memory_store["execution_enabled"]
+        )
+
+        memory_recall = tools["memory_recall"]
+
+        self.assertEqual(
+            memory_recall["capability"],
+            "memory",
+        )
+
+        self.assertFalse(
+            memory_recall["execution_enabled"]
+        )
+
+    def test_9d(self):
+        result = get_tool_selection_regression()
+
+        self.assertTrue(result["regression_passed"])
+        self.assertEqual(result["integration_layer"], "9D")
+        self.assertEqual(result["integration_status"], "READY")
+        self.assertTrue(result["checks"]["layer_9d"])
+        self.assertTrue(result["checks"]["status_ready"])
+        self.assertTrue(result["checks"]["memory_store_selected"])
+        self.assertTrue(result["checks"]["memory_recall_selected"])
+        self.assertTrue(result["checks"]["knowledge_selected"])
+        self.assertTrue(result["checks"]["unknown_no_tool_selected"])
+        self.assertTrue(result["checks"]["selection_enabled"])
+        self.assertTrue(result["checks"]["execution_disabled"])
+        self.assertTrue(result["checks"]["permission_disabled"])
+
+        self.assertFalse(result["execution_enabled"])
+        self.assertFalse(result["permission_enabled"])
+
+    def test_9e(self):
+        result = get_action_policy_regression()
+
+        self.assertTrue(result["regression_passed"])
+        self.assertEqual(result["integration_layer"], "9E")
+        self.assertEqual(result["integration_status"], "READY")
+
+        checks = result["checks"]
+
+        self.assertTrue(checks["layer_9e"])
+        self.assertTrue(checks["status_ready"])
+        self.assertTrue(checks["memory_tool_evaluated"])
+        self.assertTrue(checks["knowledge_tool_evaluated"])
+        self.assertTrue(checks["memory_requires_human_review"])
+        self.assertTrue(checks["knowledge_requires_human_review"])
+        self.assertTrue(checks["unknown_request_has_no_evaluations"])
+        self.assertTrue(checks["execution_disabled"])
+        self.assertTrue(checks["automatic_action_disabled"])
+        self.assertTrue(checks["self_modification_disabled"])
+        self.assertTrue(checks["decision_override_disabled"])
+
+        self.assertFalse(result["execution_enabled"])
+        self.assertFalse(result["automatic_action_allowed"])
+        self.assertFalse(result["self_modification_allowed"])
+        self.assertFalse(result["decision_override_allowed"])
+
+    def test_9f(self):
+        result = get_controlled_execution_regression()
+
+        self.assertTrue(result["regression_passed"])
+        self.assertEqual(result["integration_layer"], "9F")
+        self.assertEqual(result["integration_status"], "READY")
+
+        checks = result["checks"]
+
+        self.assertTrue(checks["layer_9f"])
+        self.assertTrue(checks["status_ready"])
+        self.assertTrue(checks["registered_tool_reaches_gate"])
+        self.assertTrue(checks["registered_tool_not_executed"])
+        self.assertTrue(checks["unknown_tool_blocked"])
+        self.assertTrue(checks["human_review_not_executed"])
+        self.assertTrue(checks["execution_disabled"])
+        self.assertTrue(checks["automatic_action_disabled"])
+        self.assertTrue(checks["self_modification_disabled"])
+        self.assertTrue(checks["decision_override_disabled"])
+        self.assertTrue(checks["human_review_preserved"])
+
+        self.assertFalse(result["execution_enabled"])
+        self.assertFalse(result["automatic_action_allowed"])
+        self.assertFalse(result["self_modification_allowed"])
+        self.assertFalse(result["decision_override_allowed"])
+
+    def test_9g(self):
+        result = get_action_results_regression()
+
+        self.assertTrue(result["regression_passed"])
+        self.assertEqual(result["integration_layer"], "9G")
+        self.assertEqual(result["integration_status"], "READY")
+
+        checks = result["checks"]
+
+        self.assertTrue(checks["layer_9g"])
+        self.assertTrue(checks["status_ready"])
+        self.assertTrue(checks["human_review_normalized"])
+        self.assertTrue(checks["human_review_required"])
+        self.assertTrue(checks["human_review_not_success"])
+        self.assertTrue(checks["blocked_normalized"])
+        self.assertTrue(checks["blocked_not_success"])
+        self.assertTrue(checks["tool_identity_preserved"])
+        self.assertTrue(checks["unknown_tool_identity_preserved"])
+        self.assertTrue(checks["execution_disabled"])
+        self.assertTrue(checks["automatic_action_disabled"])
+        self.assertTrue(checks["self_modification_disabled"])
+        self.assertTrue(checks["decision_override_disabled"])
+
+        self.assertFalse(result["execution_enabled"])
+        self.assertFalse(result["automatic_action_allowed"])
+        self.assertFalse(result["self_modification_allowed"])
+        self.assertFalse(result["decision_override_allowed"])
+
+        self.assertEqual(
+            result["human_review_result"]["result_status"],
+            "HUMAN_REVIEW",
+        )
+
+        self.assertEqual(
+            result["blocked_result"]["result_status"],
+            "BLOCKED",
+        )
+
+    def test_9h(self):
+        result = get_action_audit_regression()
+
+        self.assertTrue(result["regression_passed"])
+        self.assertEqual(result["integration_layer"], "9H")
+        self.assertEqual(result["integration_status"], "READY")
+
+        checks = result["checks"]
+
+        self.assertTrue(checks["layer_9h"])
+        self.assertTrue(checks["status_ready"])
+        self.assertTrue(checks["memory_audit_created"])
+        self.assertTrue(checks["memory_tool_preserved"])
+        self.assertTrue(checks["memory_result_preserved"])
+        self.assertTrue(checks["memory_review_preserved"])
+        self.assertTrue(checks["memory_not_executed"])
+        self.assertTrue(checks["unknown_audit_created"])
+        self.assertTrue(checks["unknown_tool_preserved"])
+        self.assertTrue(checks["unknown_result_preserved"])
+        self.assertTrue(checks["records_available"])
+        self.assertTrue(checks["memory_record_retrievable"])
+        self.assertTrue(checks["unknown_record_retrievable"])
+        self.assertTrue(checks["audit_available"])
+        self.assertTrue(checks["execution_disabled"])
+        self.assertTrue(checks["automatic_action_disabled"])
+        self.assertTrue(checks["self_modification_disabled"])
+        self.assertTrue(checks["decision_override_disabled"])
+
+        self.assertFalse(result["execution_enabled"])
+        self.assertFalse(result["automatic_action_allowed"])
+        self.assertFalse(result["self_modification_allowed"])
+        self.assertFalse(result["decision_override_allowed"])
+
+        self.assertEqual(
+            result["memory_record"]["audit_record"]["tool_id"],
+            "memory_store",
+        )
+
+        self.assertEqual(
+            result["memory_record"]["audit_record"]["result_status"],
+            "HUMAN_REVIEW",
+        )
+
+        self.assertEqual(
+            result["unknown_record"]["audit_record"]["tool_id"],
+            "unknown_tool",
+        )
+
+        self.assertEqual(
+            result["unknown_record"]["audit_record"]["result_status"],
+            "BLOCKED",
+        )
+
+    def test_9i(self):
+        result = get_capability_integration_regression()
+
+        self.assertTrue(result["regression_passed"])
+        self.assertEqual(result["integration_layer"], "9I")
+        self.assertEqual(result["integration_status"], "READY")
+
+        checks = result["checks"]
+
+        self.assertTrue(checks["layer_9i"])
+        self.assertTrue(checks["status_ready"])
+        self.assertTrue(checks["integration_enabled"])
+
+        self.assertTrue(
+            checks["memory_capability_discovered"]
+        )
+        self.assertTrue(
+            checks["memory_tool_selected"]
+        )
+        self.assertTrue(
+            checks["memory_policy_evaluated"]
+        )
+        self.assertTrue(
+            checks["memory_action_result_created"]
+        )
+        self.assertTrue(
+            checks["memory_result_requires_review"]
+        )
+        self.assertTrue(
+            checks["memory_audit_created"]
+        )
+
+        self.assertTrue(
+            checks["knowledge_capability_discovered"]
+        )
+        self.assertTrue(
+            checks["knowledge_tool_selected"]
+        )
+        self.assertTrue(
+            checks["knowledge_policy_evaluated"]
+        )
+        self.assertTrue(
+            checks["knowledge_action_result_created"]
+        )
+        self.assertTrue(
+            checks["knowledge_result_requires_review"]
+        )
+        self.assertTrue(
+            checks["knowledge_audit_created"]
+        )
+
+        self.assertTrue(
+            checks["unknown_capability_not_invented"]
+        )
+        self.assertTrue(
+            checks["unknown_no_tool_selected"]
+        )
+        self.assertTrue(
+            checks["unknown_no_action_result"]
+        )
+        self.assertTrue(
+            checks["unknown_no_audit"]
+        )
+
+        self.assertTrue(
+            checks["execution_disabled"]
+        )
+        self.assertTrue(
+            checks["automatic_action_disabled"]
+        )
+        self.assertTrue(
+            checks["self_modification_disabled"]
+        )
+        self.assertTrue(
+            checks["decision_override_disabled"]
+        )
+
+        self.assertFalse(
+            result["execution_enabled"]
+        )
+        self.assertFalse(
+            result["automatic_action_allowed"]
+        )
+        self.assertFalse(
+            result["self_modification_allowed"]
+        )
+        self.assertFalse(
+            result["decision_override_allowed"]
         )
 
     def test_8a(self):
