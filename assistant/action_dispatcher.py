@@ -1,11 +1,14 @@
-"""
+﻿"""
 HOPE Action Dispatcher
 
 Transitional dispatcher between R1 and the legacy Router.
 
 Capability/action requests are prepared through the 9A-9I architecture
-and the 9F controlled execution boundary, while actual legacy execution
-remains owned by the Router until controlled execution is explicitly enabled.
+and the 9F controlled execution boundary.
+
+MEMORY_SAVE is prevented from falling through to the legacy Router when
+controlled execution is blocked. Other legacy intents remain owned by
+the Router during this transitional phase.
 """
 
 from assistant.router import route
@@ -63,6 +66,22 @@ def _prepare_capability_action(result):
     return result
 
 
+def _memory_save_blocked_response(result):
+    """Return a controlled response when MEMORY_SAVE execution is blocked."""
+
+    boundary = result["action_dispatch"]["controlled_execution"]
+
+    reason = boundary.get(
+        "reason",
+        "Controlled execution is currently disabled.",
+    )
+
+    return (
+        "Memory save was not executed. "
+        f"Controlled execution is blocked: {reason}"
+    )
+
+
 def dispatch(result):
     """Dispatch a runtime result through the appropriate execution path."""
 
@@ -70,6 +89,14 @@ def dispatch(result):
 
     if intent in ACTION_INTENTS:
         result = _prepare_capability_action(result)
+
+        boundary = result["action_dispatch"].get(
+            "controlled_execution",
+            {},
+        )
+
+        if boundary.get("execution_allowed") is not True:
+            return _memory_save_blocked_response(result)
 
     return route(result)
 
