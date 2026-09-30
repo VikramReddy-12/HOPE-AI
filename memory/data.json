@@ -1,10 +1,18 @@
 {
-    "favorite_car": "bmw",
+    "favorite_car": "BMW 7 Series",
     "current_goal": "Ai Engineer",
     "goal_progress": {
         "Ai Engineer": [
             "Learn Python"
         ]
     },
-    "test": "hello"
+    "test": "hello",
+    "test_r1": "hello",
+    "test_r1_cleanup": "hello",
+    "test_cleanup": "hello",
+    "test_dispatch": "hello",
+    "test_c31_migration": "hello",
+    "test_c32_blocked": "hello",
+    "test_c32_dispatch": "hello",
+    "test_c32_no_execute": "hello"
 }
