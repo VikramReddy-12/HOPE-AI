@@ -6,9 +6,9 @@ Transitional dispatcher between R1 and the legacy Router.
 Capability/action requests are prepared through the 9A-9I architecture
 and the 9F controlled execution boundary.
 
-MEMORY_SAVE is prevented from falling through to the legacy Router when
-controlled execution is blocked. Other legacy intents remain owned by
-the Router during this transitional phase.
+MEMORY_SAVE and MEMORY_RECALL are prevented from falling through to the
+legacy Router when controlled execution is blocked. Other legacy intents
+remain owned by the Router during this transitional phase.
 """
 
 from assistant.router import route
@@ -18,6 +18,7 @@ from core.memory_save_boundary import validate_memory_save_boundary
 
 ACTION_INTENTS = {
     "MEMORY_SAVE",
+    "MEMORY_RECALL",
 }
 
 
@@ -66,18 +67,32 @@ def _prepare_capability_action(result):
     return result
 
 
-def _memory_save_blocked_response(result):
-    """Return a controlled response when MEMORY_SAVE execution is blocked."""
+def _controlled_action_blocked_response(result):
+    """Return a controlled response when execution is blocked."""
 
-    boundary = result["action_dispatch"]["controlled_execution"]
+    if result.get("intent") == "MEMORY_SAVE":
+        boundary = result["action_dispatch"]["controlled_execution"]
 
-    reason = boundary.get(
-        "reason",
-        "Controlled execution is currently disabled.",
-    )
+        reason = boundary.get(
+            "reason",
+            "Controlled execution is currently disabled.",
+        )
+    else:
+        action_results = result["action_dispatch"].get(
+            "action_results",
+            [],
+        )
+
+        if action_results:
+            reason = action_results[0].get(
+                "reason",
+                "Controlled execution is currently disabled.",
+            )
+        else:
+            reason = "Controlled execution is currently disabled."
 
     return (
-        "Memory save was not executed. "
+        "Action was not executed. "
         f"Controlled execution is blocked: {reason}"
     )
 
@@ -90,13 +105,28 @@ def dispatch(result):
     if intent in ACTION_INTENTS:
         result = _prepare_capability_action(result)
 
-        boundary = result["action_dispatch"].get(
-            "controlled_execution",
-            {},
-        )
+        if intent == "MEMORY_SAVE":
+            boundary = result["action_dispatch"].get(
+                "controlled_execution",
+                {},
+            )
 
-        if boundary.get("execution_allowed") is not True:
-            return _memory_save_blocked_response(result)
+            if boundary.get("execution_allowed") is not True:
+                return _controlled_action_blocked_response(result)
+
+        else:
+            action_results = result["action_dispatch"].get(
+                "action_results",
+                [],
+            )
+
+            if not action_results:
+                return _controlled_action_blocked_response(result)
+
+            if action_results[0].get(
+                "execution_allowed"
+            ) is not True:
+                return _controlled_action_blocked_response(result)
 
     return route(result)
 
@@ -119,16 +149,33 @@ def get_action_dispatcher_regression():
     capability_result = prepared_result["action_dispatch"]
     boundary = capability_result["controlled_execution"]
 
+    recall_request = {
+        "intent": "MEMORY_RECALL",
+        "command": "recall favorite_car",
+    }
+
+    recall_prepared = _prepare_capability_action(recall_request)
+
+    recall_capability_result = recall_prepared["action_dispatch"]
+    recall_action_results = recall_capability_result[
+        "action_results"
+    ]
+
+    recall_response = dispatch(recall_request)
+
     checks = {
         "layer": LAYER == "ACTION_DISPATCHER",
         "status": STATUS == "TRANSITIONAL",
+
         "dispatch_returns_string": isinstance(
             greeting_response,
             str,
         ),
+
         "memory_capability_result_present": (
             isinstance(capability_result, dict)
         ),
+
         "memory_tool_selected": any(
             tool.get("tool_id") == "memory_store"
             for tool in capability_result.get(
@@ -136,25 +183,58 @@ def get_action_dispatcher_regression():
                 [],
             )
         ),
+
         "memory_boundary_present": (
             boundary["layer"] == "9F"
         ),
+
         "memory_execution_disabled": (
             boundary["execution_allowed"] is False
         ),
+
         "memory_automatic_action_disabled": (
             capability_result["automatic_action_allowed"]
             is False
         ),
+
+        "recall_tool_selected": any(
+            tool.get("tool_id") == "memory_recall"
+            for tool in recall_capability_result.get(
+                "selected_tools",
+                [],
+            )
+        ),
+
+        "recall_action_result_present": (
+            len(recall_action_results) >= 1
+        ),
+
+        "recall_requires_human_review": (
+            recall_action_results[0]["result_status"]
+            == "HUMAN_REVIEW"
+        ),
+
+        "recall_execution_disabled": (
+            recall_action_results[0]["execution_enabled"]
+            is False
+        ),
+
+        "recall_response_is_string": (
+            isinstance(recall_response, str)
+        ),
+
         "dispatcher_execution_disabled": (
             EXECUTION_ENABLED is False
         ),
+
         "dispatcher_automatic_action_disabled": (
             AUTOMATIC_ACTION_ALLOWED is False
         ),
+
         "dispatcher_self_modification_disabled": (
             SELF_MODIFICATION_ALLOWED is False
         ),
+
         "dispatcher_decision_override_disabled": (
             DECISION_OVERRIDE_ALLOWED is False
         ),
@@ -171,3 +251,5 @@ def get_action_dispatcher_regression():
 if __name__ == "__main__":
     print("ACTION DISPATCHER REGRESSION:")
     print(get_action_dispatcher_regression())
+
+
