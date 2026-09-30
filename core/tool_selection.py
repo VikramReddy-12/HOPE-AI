@@ -1,4 +1,4 @@
-﻿"""
+"""
 HOPE-AI 9D Tool Selection
 
 Selects the most appropriate registered tool for capabilities
@@ -44,10 +44,22 @@ def select_tool_for_capability(capability, request=None):
         if any(
             phrase in normalized
             for phrase in [
+                "forget",
+                "delete",
+                "remove",
+            ]
+        ):
+            preferred = "memory_forget"
+
+            if preferred in tools:
+                return tools[preferred]
+
+        if any(
+            phrase in normalized
+            for phrase in [
                 "remember",
                 "save",
                 "store",
-                "forget",
             ]
         ):
             preferred = "memory_store"
@@ -123,6 +135,10 @@ def get_tool_selection_regression():
         "What is my favorite car?"
     )
 
+    memory_forget_result = select_tools(
+        "Forget my favorite car."
+    )
+
     knowledge_result = select_tools(
         "What is software testing?"
     )
@@ -143,6 +159,11 @@ def get_tool_selection_regression():
         for tool in memory_recall_result["selected_tools"]
     ]
 
+    memory_forget_tools = [
+        tool["tool_id"]
+        for tool in memory_forget_result["selected_tools"]
+    ]
+
     knowledge_tools = [
         tool["tool_id"]
         for tool in knowledge_result["selected_tools"]
@@ -158,6 +179,10 @@ def get_tool_selection_regression():
 
         "memory_recall_selected": (
             "memory_recall" in memory_recall_tools
+        ),
+
+        "memory_forget_selected": (
+            memory_forget_tools == ["memory_forget"]
         ),
 
         "knowledge_selected": (
@@ -188,6 +213,7 @@ def get_tool_selection_regression():
         "checks": checks,
         "memory_store_result": memory_store_result,
         "memory_recall_result": memory_recall_result,
+        "memory_forget_result": memory_forget_result,
         "knowledge_result": knowledge_result,
         "unknown_result": unknown_result,
         "execution_enabled": False,

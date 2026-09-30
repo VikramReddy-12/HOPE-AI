@@ -1,4 +1,4 @@
-﻿"""
+"""
 HOPE-AI 9C Tool Architecture
 
 Defines the structure used to describe tools that may later be
@@ -59,6 +59,20 @@ TOOL_REGISTRY = {
         },
         "output_schema": {
             "value": "string",
+        },
+        "requires_permission": False,
+        "execution_enabled": False,
+    },
+    "memory_forget": {
+        "tool_id": "memory_forget",
+        "name": "Memory Forget",
+        "description": "Remove approved information from HOPE memory.",
+        "capability": "memory",
+        "input_schema": {
+            "key": "string",
+        },
+        "output_schema": {
+            "forgotten": "boolean",
         },
         "requires_permission": False,
         "execution_enabled": False,
@@ -127,12 +141,16 @@ def get_tool_architecture_regression():
         "memory_recall_registered": is_tool_registered(
             "memory_recall"
         ),
+        "memory_forget_registered": is_tool_registered(
+            "memory_forget"
+        ),
         "knowledge_capability_mapping": (
             "knowledge_lookup" in knowledge_tools
         ),
         "memory_capability_mapping": (
             "memory_store" in memory_tools
             and "memory_recall" in memory_tools
+            and "memory_forget" in memory_tools
         ),
         "unknown_tool_blocked": not is_tool_registered(
             "unknown_tool"
@@ -145,6 +163,9 @@ def get_tool_architecture_regression():
         ),
         "permission_disabled": (
             status["permission_enabled"] is False
+        ),
+        "memory_forget_execution_disabled": (
+            tools["memory_forget"]["execution_enabled"] is False
         ),
     }
 
