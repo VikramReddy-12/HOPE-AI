@@ -1,4 +1,4 @@
-﻿"""
+"""
 HOPE-AI 9B Capability Discovery
 
 Discovers which registered capabilities are relevant to a request.
@@ -54,6 +54,10 @@ def discover_capabilities(request):
             "why is",
             "explain",
             "tell me about",
+            "search",
+            "look up",
+            "lookup",
+            "find information",
         ],
         "conversation": [
             "conversation",
@@ -130,6 +134,10 @@ def get_capability_discovery_regression():
         "What is software testing?"
     )
 
+    knowledge_search_result = discover_capabilities(
+        "search software testing"
+    )
+
     planning_result = discover_capabilities(
         "Create a roadmap for learning Python."
     )
@@ -150,6 +158,12 @@ def get_capability_discovery_regression():
         "knowledge_discovered": (
             "knowledge"
             in knowledge_result["discovered_capabilities"]
+        ),
+        "knowledge_search_discovered": (
+            "knowledge"
+            in knowledge_search_result[
+                "discovered_capabilities"
+            ]
         ),
         "planning_discovered": (
             "planning"
@@ -177,6 +191,7 @@ def get_capability_discovery_regression():
         "checks": checks,
         "memory_result": memory_result,
         "knowledge_result": knowledge_result,
+        "knowledge_search_result": knowledge_search_result,
         "planning_result": planning_result,
         "unknown_result": unknown_result,
         "execution_enabled": False,
