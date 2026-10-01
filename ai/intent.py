@@ -48,6 +48,11 @@ def detect_intent(command):
         command
     ).strip().lower()
 
+    # Normalize common trailing sentence punctuation so
+    # commands such as "inspect the project." match the
+    # same intent as "inspect the project".
+    command = command.rstrip(".!?").strip()
+
     if not command:
 
         return "UNKNOWN"
@@ -677,6 +682,24 @@ def detect_intent(command):
         ):
 
             return "KNOWLEDGE_SEARCH"
+
+    # ========================================================
+    # DEVELOPMENT
+    # ========================================================
+
+    if command in [
+        "inspect the project",
+        "check the project",
+        "check the code",
+        "run the tests",
+        "run tests",
+        "fix the code",
+        "modify the project",
+        "build this project",
+        "software development",
+    ]:
+
+        return "DEVELOPMENT"
 
     # ========================================================
     # UNKNOWN
