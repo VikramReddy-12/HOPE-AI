@@ -22,6 +22,7 @@ ACTION_INTENTS = {
     "MEMORY_RECALL",
     "FORGET",
     "KNOWLEDGE_SEARCH",
+    "DEVELOPMENT",
 }
 
 
