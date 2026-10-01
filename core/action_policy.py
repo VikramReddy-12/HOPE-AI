@@ -1,4 +1,4 @@
-﻿"""
+"""
 HOPE-AI 9E Permission / Action Policy
 
 Defines the policy boundary for selected tools.
@@ -124,6 +124,9 @@ def get_action_policy_regression():
         "Remember that my favorite car is a BMW."
     )
 
+    development_result = evaluate_request_policy(
+        "Inspect the project."
+    )
     knowledge_result = evaluate_request_policy(
         "What is software testing?"
     )
@@ -146,6 +149,17 @@ def get_action_policy_regression():
             and memory_evaluations[0]["tool_id"] == "memory_store"
         ),
 
+        "development_tool_evaluated": (
+            len(development_result["evaluations"]) == 1
+            and development_result["evaluations"][0]["tool_id"]
+            == "project_inspect"
+        ),
+
+        "development_requires_human_review": (
+            len(development_result["evaluations"]) == 1
+            and development_result["evaluations"][0]["policy"]["decision"]
+            == POLICY_HUMAN_REVIEW
+        ),
         "knowledge_tool_evaluated": (
             len(knowledge_evaluations) == 1
             and knowledge_evaluations[0]["tool_id"]
@@ -203,3 +217,5 @@ def get_action_policy_regression():
 if __name__ == "__main__":
     print("9E ACTION POLICY REGRESSION:")
     print(get_action_policy_regression())
+
+

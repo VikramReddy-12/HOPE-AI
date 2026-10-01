@@ -1,4 +1,4 @@
-﻿"""
+"""
 HOPE-AI 9A Capability Registry
 
 Defines the capabilities currently available to HOPE.
@@ -66,7 +66,12 @@ CAPABILITIES = {
         "available": True,
         "execution_required": False,
     },
-    "accountability": {
+    "development": {
+        "name": "Development",
+        "description": "Inspect, plan, test, verify, and manage controlled software development workflows.",
+        "available": True,
+        "execution_required": True,
+    },    "accountability": {
         "name": "Accountability",
         "description": "Maintain accountability and audit boundaries.",
         "available": True,
@@ -156,3 +161,4 @@ def get_capability_regression():
 if __name__ == "__main__":
     print("9A CAPABILITY REGISTRY REGRESSION:")
     print(get_capability_regression())
+

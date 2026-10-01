@@ -87,7 +87,18 @@ def discover_capabilities(request):
             "steps",
             "schedule",
         ],
-        "adaptive_intelligence": [
+        "development": [
+            "develop",
+            "development",
+            "build this project",
+            "modify the project",
+            "inspect the project",
+            "run tests",
+            "run the tests",
+            "fix the code",
+            "check the code",
+            "software development",
+        ],        "adaptive_intelligence": [
             "adapt",
             "adaptive",
             "personalize",
@@ -201,3 +212,4 @@ def get_capability_discovery_regression():
 if __name__ == "__main__":
     print("9B CAPABILITY DISCOVERY REGRESSION:")
     print(get_capability_discovery_regression())
+

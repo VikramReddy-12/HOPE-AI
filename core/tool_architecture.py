@@ -63,7 +63,21 @@ TOOL_REGISTRY = {
         "requires_permission": False,
         "execution_enabled": False,
     },
-    "memory_forget": {
+    "project_inspect": {
+        "tool_id": "project_inspect",
+        "name": "Project Inspect",
+        "description": "Inspect the HOPE-AI project structure and development state.",
+        "capability": "development",
+        "input_schema": {
+            "path": "string",
+        },
+        "output_schema": {
+            "project_structure": "object",
+            "development_state": "object",
+        },
+        "requires_permission": False,
+        "execution_enabled": False,
+    },    "memory_forget": {
         "tool_id": "memory_forget",
         "name": "Memory Forget",
         "description": "Remove approved information from HOPE memory.",
@@ -123,6 +137,7 @@ def get_tool_architecture_regression():
     """Validate the 9C tool architecture."""
     tools = get_tools()
 
+    development_tools = get_tools_for_capability("development")
     knowledge_tools = get_tools_for_capability("knowledge")
     memory_tools = get_tools_for_capability("memory")
 
@@ -144,7 +159,15 @@ def get_tool_architecture_regression():
         "memory_forget_registered": is_tool_registered(
             "memory_forget"
         ),
-        "knowledge_capability_mapping": (
+        "project_inspect_registered": is_tool_registered(
+            "project_inspect"
+        ),
+        "development_capability_mapping": (
+            "project_inspect" in development_tools
+        ),
+        "project_inspect_execution_disabled": (
+            tools["project_inspect"]["execution_enabled"] is False
+        ),        "knowledge_capability_mapping": (
             "knowledge_lookup" in knowledge_tools
         ),
         "memory_capability_mapping": (
@@ -184,3 +207,6 @@ def get_tool_architecture_regression():
 if __name__ == "__main__":
     print("9C TOOL ARCHITECTURE REGRESSION:")
     print(get_tool_architecture_regression())
+
+
+

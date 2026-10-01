@@ -72,6 +72,11 @@ def select_tool_for_capability(capability, request=None):
         if preferred in tools:
             return tools[preferred]
 
+    if capability == "development":
+        preferred = "project_inspect"
+
+        if preferred in tools:
+            return tools[preferred]
     if capability == "knowledge":
         preferred = "knowledge_lookup"
 
@@ -139,6 +144,9 @@ def get_tool_selection_regression():
         "Forget my favorite car."
     )
 
+    development_result = select_tools(
+        "Inspect the project."
+    )
     knowledge_result = select_tools(
         "What is software testing?"
     )
@@ -185,7 +193,15 @@ def get_tool_selection_regression():
             memory_forget_tools == ["memory_forget"]
         ),
 
-        "knowledge_selected": (
+        "development_selected": (
+            [
+                tool["tool_id"]
+                for tool in development_result["selected_tools"]
+            ] == ["project_inspect"]
+        ),
+        "development_execution_disabled": (
+            development_result["execution_enabled"] is False
+        ),        "knowledge_selected": (
             "knowledge_lookup" in knowledge_tools
         ),
 
@@ -224,3 +240,6 @@ def get_tool_selection_regression():
 if __name__ == "__main__":
     print("9D TOOL SELECTION REGRESSION:")
     print(get_tool_selection_regression())
+
+
+
